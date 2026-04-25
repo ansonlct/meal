@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>飲食記錄時間線 · 自訂配料與規則</title>
+    <title>飲食記錄時間線 · 飲品數量與修復刪除</title>
     <style>
         :root {
             --bg: #f8f9fb; --card-bg: #ffffff; --text: #1e2126; --text-secondary: #5f6b7a;
@@ -151,30 +151,26 @@
                 <label>🍜 食物名稱</label><input type="text" id="foodName" placeholder="例：海南雞飯" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
                 <label>🥤 飲品名稱</label>
                 <div style="display:flex; gap:8px; align-items:center;">
-                    <input type="text" id="drinkName" placeholder="例：凍檸茶、可樂" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
-                    <span style="white-space:nowrap;">數量</span>
-                    <input type="number" id="drinkQuantity" value="1" min="1" max="99" style="width:80px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                    <input type="text" id="drinkName" placeholder="例：凍檸茶" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                    <span>數量</span>
+                    <input type="number" id="drinkQty" value="1" min="1" max="99" style="width:80px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
                     <span>杯</span>
                 </div>
-
                 <label>🖼️ 圖片</label>
                 <div class="upload-area">
-                    <button type="button" id="btnUpload" class="btn" style="background:#eee; color:#333;">📷 從相簿選擇</button>
+                    <button type="button" id="btnUpload" class="btn" style="background:#eee; color:#333;">📷 相簿選擇</button>
                     <img id="imgPreview" class="thumb" style="display:none;" onclick="showLightbox(this.src)">
                     <button type="button" id="btnRemoveImg" class="btn btn-danger" style="display:none;">移除</button>
                     <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
-
                 <div style="display:flex; align-items:center; margin-top:12px;">
                     <label style="margin:0;">🥩 配料</label>
                     <button type="button" id="btnManageIngredients" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">⚙️ 管理配料</button>
                 </div>
                 <div class="toggle-row" id="ingToggles"></div>
-
                 <label style="margin-top:12px;">🥤 飲品配料</label>
                 <div class="toggle-row" id="drinkToggles"></div>
                 <input type="text" id="customIng" placeholder="其他配料 (逗號分隔)" style="width:100%; padding:10px; margin-top:6px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
-
                 <label style="margin-top:12px;">📝 備註</label>
                 <div class="toggle-row" data-group="sweet"><button class="toggle note" data-val="多甜">多甜</button><button class="toggle note" data-val="少甜">少甜</button><button class="toggle note" data-val="走甜">走甜(無糖)</button></div>
                 <div class="toggle-row" data-group="sauce"><button class="toggle note" data-val="多醬">多醬</button><button class="toggle note" data-val="少醬">少醬</button><button class="toggle note" data-val="走醬">走醬</button></div>
@@ -186,14 +182,13 @@
                 <div class="toggle-row" data-group="portion"><button class="toggle note" data-val="加大">加大</button><button class="toggle note" data-val="正常">正常</button><button class="toggle note" data-val="少份">少份</button></div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-danger" id="deleteBtn" style="display:none;">🗑 刪除</button>
+                <button class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deleteMeal()">🗑 刪除</button>
                 <button class="btn" onclick="closeModal()">取消</button>
                 <button class="btn btn-primary" onclick="saveMeal()">💾 儲存</button>
             </div>
         </div>
     </div>
 
-    <!-- 配料管理模态框 -->
     <div class="modal-overlay" id="ingredientManageModal">
         <div class="modal">
             <h3>⚙️ 配料管理</h3>
@@ -210,9 +205,8 @@
     <script>
         (function() {
             const $ = id => document.getElementById(id);
-            // 使用 let 声明 meals，以便在删除/导入时可以重新赋值
-            let meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
-            // 自定义配料列表
+            // 使用 const 声明 meals，所有修改均通过 splice/push/unshift 等方法，避免变量重绑定
+            const meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
             const defaultIngredients = [
                 { name: '雞', isDrink: false }, { name: '豬', isDrink: false }, { name: '牛', isDrink: false }, { name: '羊', isDrink: false },
                 { name: '魚', isDrink: false }, { name: '蝦', isDrink: false }, { name: '蟹', isDrink: false }, { name: '海鮮', isDrink: false },
@@ -224,7 +218,6 @@
                 { name: '烈酒', isDrink: true }, { name: '汽水', isDrink: true }, { name: '氣泡水', isDrink: true }, { name: '果汁', isDrink: true }
             ];
             let customIngredients = JSON.parse(localStorage.getItem('diet_custom_ingredients')) || defaultIngredients;
-            // 自动匹配规则
             const defaultRules = [
                 { keyword: '海南雞', ingredientName: '雞' },
                 { keyword: '雞飯', ingredientName: '飯' },
@@ -235,7 +228,6 @@
             let currentEditId = null;
             let currentImageData = null;
 
-            // 保存配料和规则
             function saveCustomData() {
                 localStorage.setItem('diet_custom_ingredients', JSON.stringify(customIngredients));
                 localStorage.setItem('diet_auto_match_rules', JSON.stringify(autoMatchRules));
@@ -246,10 +238,8 @@
                 const ingContainer = $('ingToggles');
                 const drinkContainer = $('drinkToggles');
                 if (!ingContainer || !drinkContainer) return;
-                ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i =>
-                    `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
-                drinkContainer.innerHTML = customIngredients.filter(i => i.isDrink).map(i =>
-                    `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('');
+                ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i => `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
+                drinkContainer.innerHTML = customIngredients.filter(i => i.isDrink).map(i => `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('');
             }
 
             function renderManagePanel() {
@@ -258,24 +248,20 @@
                 const ingredientItems = customIngredients.map((ing, idx) => `
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                         <span style="flex:1;">${ing.name} ${ing.isDrink ? '(飲品)' : '(食物)'}</span>
-                        <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="deleteIngredient(${idx})">刪除</button>
+                        <button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteIngredient(${idx})">刪除</button>
                     </div>`).join('');
                 list.innerHTML = `
                     <div style="margin-bottom:12px;"><b>現有配料</b></div>
                     ${ingredientItems}
                     <div style="display:flex; gap:8px; margin-top:12px;">
-                        <input type="text" id="newIngredientName" placeholder="新配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
-                        <select id="newIngredientType" style="padding:8px; border-radius:8px; border:1px solid var(--border);">
-                            <option value="food">食物</option>
-                            <option value="drink">飲品</option>
-                        </select>
+                        <input type="text" id="newIngredientName" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
+                        <select id="newIngredientType" style="padding:8px; border-radius:8px; border:1px solid var(--border);"><option value="food">食物</option><option value="drink">飲品</option></select>
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addIngredient()">新增</button>
                     </div>`;
-
                 const ruleItems = autoMatchRules.map((rule, idx) => `
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                        <span>關鍵詞「${rule.keyword}」→ 配料「${rule.ingredientName}」</span>
-                        <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="deleteRule(${idx})">刪除</button>
+                        <span>「${rule.keyword}」→ 配料「${rule.ingredientName}」</span>
+                        <button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteRule(${idx})">刪除</button>
                     </div>`).join('');
                 rulesList.innerHTML = `
                     <div style="margin-bottom:12px;"><b>自動匹配規則</b></div>
@@ -287,51 +273,30 @@
                     </div>`;
             }
 
-            window.deleteIngredient = function(idx) {
-                customIngredients.splice(idx, 1);
-                saveCustomData();
-                renderManagePanel();
-                toast('配料已刪除');
-            };
-            window.addIngredient = function() {
-                const name = document.getElementById('newIngredientName').value.trim();
+            window.deleteIngredient = idx => { customIngredients.splice(idx, 1); saveCustomData(); renderManagePanel(); toast('配料已刪除'); };
+            window.addIngredient = () => {
+                const name = document.getElementById('newIngredientName')?.value.trim();
                 if (!name) return toast('請輸入名稱');
                 if (customIngredients.some(i => i.name === name)) return toast('配料已存在');
-                const type = document.getElementById('newIngredientType').value;
-                customIngredients.push({ name, isDrink: type === 'drink' });
-                saveCustomData();
-                renderManagePanel();
-                toast('配料已新增');
+                customIngredients.push({ name, isDrink: document.getElementById('newIngredientType')?.value === 'drink' });
+                saveCustomData(); renderManagePanel(); toast('配料已新增');
             };
-            window.deleteRule = function(idx) {
-                autoMatchRules.splice(idx, 1);
-                saveCustomData();
-                renderManagePanel();
-                toast('規則已刪除');
-            };
-            window.addRule = function() {
-                const keyword = document.getElementById('newRuleKeyword').value.trim();
-                const ingredient = document.getElementById('newRuleIngredient').value.trim();
-                if (!keyword || !ingredient) return toast('請填寫關鍵詞和配料');
+            window.deleteRule = idx => { autoMatchRules.splice(idx, 1); saveCustomData(); renderManagePanel(); toast('規則已刪除'); };
+            window.addRule = () => {
+                const keyword = document.getElementById('newRuleKeyword')?.value.trim();
+                const ingredient = document.getElementById('newRuleIngredient')?.value.trim();
+                if (!keyword || !ingredient) return toast('請填寫完整');
                 autoMatchRules.push({ keyword, ingredientName: ingredient });
-                saveCustomData();
-                renderManagePanel();
-                toast('規則已新增');
+                saveCustomData(); renderManagePanel(); toast('規則已新增');
             };
+            window.openIngredientManage = () => { renderManagePanel(); $('ingredientManageModal').style.display = 'flex'; };
+            window.closeIngredientManage = () => { $('ingredientManageModal').style.display = 'none'; };
 
-            window.openIngredientManage = function() {
-                renderManagePanel();
-                $('ingredientManageModal').style.display = 'flex';
-            };
-            window.closeIngredientManage = function() {
-                $('ingredientManageModal').style.display = 'none';
-            };
-
-            document.getElementById('btnManageIngredients').addEventListener('click', openIngredientManage);
+            document.getElementById('btnManageIngredients')?.addEventListener('click', openIngredientManage);
 
             // 主题
             const themeBtn = $('themeBtn');
-            if (localStorage.getItem('diet_theme') === 'dark' || (!localStorage.getItem('diet_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.getItem('diet_theme') === 'dark' || (!localStorage.getItem('diet_theme') && matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.body.classList.add('dark'); themeBtn.textContent = '☀️';
             }
             themeBtn.addEventListener('click', () => {
@@ -346,7 +311,7 @@
                 document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
             }
 
-            // 图片上传
+            // 图片
             $('btnUpload').addEventListener('click', () => $('fileInput').click());
             $('fileInput').addEventListener('change', function() {
                 const file = this.files[0];
@@ -384,20 +349,13 @@
 
             function autoSelectIngredients(foodName) {
                 document.querySelectorAll('.toggle.ing').forEach(b => b.classList.remove('active'));
-                if (/海鮮|海鲜|seafood/i.test(foodName)) {
-                    const btn = document.querySelector(`.toggle.ing[data-val="海鮮"]`);
-                    if (btn) btn.classList.add('active');
-                }
+                if (/海鮮|海鲜|seafood/i.test(foodName)) document.querySelector(`.toggle.ing[data-val="海鮮"]`)?.classList.add('active');
                 customIngredients.filter(i => !i.isDrink).forEach(ing => {
-                    if (foodName.includes(ing.name)) {
-                        const btn = document.querySelector(`.toggle.ing[data-val="${ing.name}"]`);
-                        if (btn) btn.classList.add('active');
-                    }
+                    if (foodName.includes(ing.name)) document.querySelector(`.toggle.ing[data-val="${ing.name}"]`)?.classList.add('active');
                 });
                 autoMatchRules.forEach(rule => {
                     if (foodName.includes(rule.keyword)) {
-                        const btn = document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`);
-                        if (btn) btn.classList.add('active');
+                        document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
                     }
                 });
             }
@@ -405,58 +363,32 @@
             function autoSelectDrinks(drinkName) {
                 document.querySelectorAll('.toggle.drink').forEach(b => b.classList.remove('active'));
                 const lower = drinkName.toLowerCase();
-                const drinkAliasMap = {
-                    '忌廉': '汽水','可樂': '汽水','雪碧': '汽水','sprite': '汽水','芬達': '汽水','fanta': '汽水',
-                    '七喜': '汽水','7 up': '汽水','百事': '汽水','pepsi': '汽水','coke': '汽水','汽水': '汽水',
-                    '檸': '檸檬','檸檬': '檸檬','soda': '氣泡水','梳打': '氣泡水','氣泡水': '氣泡水',
-                    '蘋果汁': '果汁','橙汁': '果汁','提子汁': '果汁','芒果汁': '果汁','果汁': '果汁',
-                    '啡': '咖啡','咖啡': '咖啡','茶': '茶','水': '水','奶': '奶',
-                    '啤酒': '啤酒','紅酒': '紅酒','白酒': '白酒',
-                    '威士忌': '烈酒','白蘭地': '烈酒','伏特加': '烈酒','氈酒': '烈酒','gin': '烈酒',
-                    '冧酒': '烈酒','rum': '烈酒','龍舌蘭': '烈酒','tequila': '烈酒',
-                    '清酒': '烈酒','sake': '烈酒','燒酒': '烈酒','利口酒': '烈酒','酒': '啤酒'
-                };
-                Object.entries(drinkAliasMap).forEach(([key, val]) => {
-                    if (lower.includes(key)) {
-                        if (val === '水' && (lower.includes('汽水')||lower.includes('氣泡水')||lower.includes('soda')||lower.includes('梳打'))) return;
-                        const btn = document.querySelector(`.toggle.drink[data-val="${val}"]`);
-                        if (btn) btn.classList.add('active');
+                const alias = { '忌廉':'汽水','可樂':'汽水','雪碧':'汽水','sprite':'汽水','芬達':'汽水','fanta':'汽水','七喜':'汽水','7 up':'汽水','百事':'汽水','pepsi':'汽水','coke':'汽水','汽水':'汽水','檸':'檸檬','檸檬':'檸檬','soda':'氣泡水','梳打':'氣泡水','氣泡水':'氣泡水','蘋果汁':'果汁','橙汁':'果汁','提子汁':'果汁','芒果汁':'果汁','果汁':'果汁','啡':'咖啡','咖啡':'咖啡','茶':'茶','水':'水','奶':'奶','啤酒':'啤酒','紅酒':'紅酒','白酒':'白酒','威士忌':'烈酒','白蘭地':'烈酒','伏特加':'烈酒','氈酒':'烈酒','gin':'烈酒','冧酒':'烈酒','rum':'烈酒','龍舌蘭':'烈酒','tequila':'烈酒','清酒':'烈酒','sake':'烈酒','燒酒':'烈酒','利口酒':'烈酒','酒':'啤酒' };
+                Object.entries(alias).forEach(([k, v]) => {
+                    if (lower.includes(k)) {
+                        if (v === '水' && (lower.includes('汽水')||lower.includes('氣泡水')||lower.includes('soda')||lower.includes('梳打'))) return;
+                        document.querySelector(`.toggle.drink[data-val="${v}"]`)?.classList.add('active');
                     }
                 });
                 autoMatchRules.forEach(rule => {
-                    if (drinkName.includes(rule.keyword)) {
-                        const btn = document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`);
-                        if (btn) btn.classList.add('active');
-                    }
+                    if (drinkName.includes(rule.keyword)) document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
                 });
             }
 
             function autoSelectNotes(text) {
-                const noteMap = {
-                    '走甜': '走甜','無糖': '走甜','无糖': '走甜','少甜': '少甜','多甜': '多甜',
-                    '多醬': '多醬','少醬': '少醬','走醬': '走醬','多油': '多油','少油': '少油','走油': '走油',
-                    '多青': '多青','少青': '少青','走青': '走青','多皮': '多皮','少皮': '少皮','走皮': '走皮',
-                    '大辣': '大辣','中辣': '中辣','小辣': '小辣','走辣': '走辣',
-                    '凍': '凍','冰': '凍','常溫': '常溫','熱': '熱','加大': '加大','少份': '少份'
-                };
-                for (let [key, val] of Object.entries(noteMap)) {
-                    if (text.includes(key)) {
-                        const btn = document.querySelector(`.toggle.note[data-val="${val}"]`);
-                        if (btn) btn.classList.add('active');
-                    }
-                }
+                const map = { '走甜':'走甜','無糖':'走甜','少甜':'少甜','多甜':'多甜','多醬':'多醬','少醬':'少醬','走醬':'走醬','多油':'多油','少油':'少油','走油':'走油','多青':'多青','少青':'少青','走青':'走青','多皮':'多皮','少皮':'少皮','走皮':'走皮','大辣':'大辣','中辣':'中辣','小辣':'小辣','走辣':'走辣','凍':'凍','冰':'凍','常溫':'常溫','熱':'熱','加大':'加大','少份':'少份' };
+                Object.entries(map).forEach(([k, v]) => {
+                    if (text.includes(k)) document.querySelector(`.toggle.note[data-val="${v}"]`)?.classList.add('active');
+                });
             }
 
             $('foodName').addEventListener('input', function() {
                 document.querySelectorAll('.toggle.ing, .toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
-                autoSelectIngredients(this.value);
-                autoSelectDrinks('');
-                autoSelectNotes(this.value);
+                autoSelectIngredients(this.value); autoSelectDrinks(''); autoSelectNotes(this.value);
             });
             $('drinkName').addEventListener('input', function() {
                 document.querySelectorAll('.toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
-                autoSelectDrinks(this.value);
-                autoSelectNotes(this.value);
+                autoSelectDrinks(this.value); autoSelectNotes(this.value);
             });
 
             // 修正备注按钮：单选且可取消
@@ -479,8 +411,7 @@
             window.openModal = function(id = null) {
                 currentEditId = id;
                 document.querySelectorAll('.toggle').forEach(b => b.classList.remove('active'));
-                $('customIng').value = ''; $('drinkName').value = '';
-                $('drinkQuantity').value = 1;
+                $('customIng').value = ''; $('drinkName').value = ''; $('drinkQty').value = 1;
                 currentImageData = null; $('imgPreview').src = ''; $('imgPreview').style.display = 'none';
                 $('btnRemoveImg').style.display = 'none'; $('fileInput').value = '';
                 if (id) {
@@ -488,21 +419,17 @@
                     if (!meal) return;
                     $('mealId').value = meal.id; $('mealDate').value = meal.date; $('mealTime').value = meal.time;
                     $('foodName').value = meal.foodName; $('drinkName').value = meal.drinkName || '';
-                    $('drinkQuantity').value = meal.drinkQuantity || 1;
+                    $('drinkQty').value = meal.drinkQuantity || 1;
                     if (meal.imageUrl) {
-                        currentImageData = meal.imageUrl;
-                        $('imgPreview').src = meal.imageUrl; $('imgPreview').style.display = 'inline-block';
-                        $('btnRemoveImg').style.display = 'inline-block';
+                        currentImageData = meal.imageUrl; $('imgPreview').src = meal.imageUrl;
+                        $('imgPreview').style.display = 'inline-block'; $('btnRemoveImg').style.display = 'inline-block';
                     }
                     (meal.ingredients||[]).forEach(ing => {
                         const btn = document.querySelector(`.toggle.ing[data-val="${ing}"], .toggle.drink[data-val="${ing}"]`);
                         if (btn) btn.classList.add('active');
                         else $('customIng').value = $('customIng').value ? $('customIng').value+', '+ing : ing;
                     });
-                    (meal.notes||[]).forEach(note => {
-                        const btn = document.querySelector(`.toggle.note[data-val="${note}"]`);
-                        if (btn) btn.classList.add('active');
-                    });
+                    (meal.notes||[]).forEach(note => document.querySelector(`.toggle.note[data-val="${note}"]`)?.classList.add('active'));
                     $('modalTitle').textContent = '✏️ 修改記錄'; $('deleteBtn').style.display = 'inline-block';
                 } else {
                     $('mealId').value = '';
@@ -515,42 +442,42 @@
                 $('mealModal').style.display = 'flex';
                 setTimeout(() => $('foodName').focus(), 100);
             };
-            window.closeModal = function() { $('mealModal').style.display = 'none'; };
+            window.closeModal = () => $('mealModal').style.display = 'none';
+
             window.saveMeal = function() {
                 const date = $('mealDate').value, time = $('mealTime').value;
                 const foodName = $('foodName').value.trim(), drinkName = $('drinkName').value.trim();
-                const drinkQty = parseInt($('drinkQuantity').value) || 1;
-                if (!date || !time || !foodName) return toast('❌ 請填寫食物名稱、日期及時間');
+                const drinkQty = parseInt($('drinkQty').value) || 1;
+                if (!date || !time || !foodName) return toast('❌ 請填寫完整');
                 const ings = [];
                 document.querySelectorAll('.toggle.ing.active').forEach(b => ings.push(b.dataset.val));
                 document.querySelectorAll('.toggle.drink.active').forEach(b => ings.push(b.dataset.val));
-                const custom = $('customIng').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-                custom.forEach(c => { if (!ings.includes(c)) ings.push(c); });
+                $('customIng').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean).forEach(c => { if (!ings.includes(c)) ings.push(c); });
                 const notes = [];
                 document.querySelectorAll('.toggle.note.active').forEach(b => notes.push(b.dataset.val));
-                const meal = {
-                    id: currentEditId || Date.now(),
-                    date, time, foodName, drinkName, drinkQuantity: drinkQty,
-                    ingredients: ings, notes, imageUrl: currentImageData || ''
-                };
+                const meal = { id: currentEditId || Date.now(), date, time, foodName, drinkName, drinkQuantity: drinkQty, ingredients: ings, notes, imageUrl: currentImageData || '' };
                 if (currentEditId) {
                     const idx = meals.findIndex(m => m.id === currentEditId);
                     if (idx !== -1) meals[idx] = meal;
-                } else meals.unshift(meal);
+                } else {
+                    meals.unshift(meal);
+                }
                 localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
                 renderTimeline(); closeModal();
-                toast(currentEditId ? '✅ 記錄已更新' : '🎉 新記錄已添加');
+                toast(currentEditId ? '✅ 已更新' : '🎉 已新增');
             };
+
+            // 删除：使用 splice，确保有效
             window.deleteMeal = function() {
                 if (!currentEditId) return;
                 if (confirm('確定刪除這筆記錄？')) {
-                    meals = meals.filter(m => m.id !== currentEditId);
+                    const idx = meals.findIndex(m => m.id === currentEditId);
+                    if (idx !== -1) meals.splice(idx, 1);
                     localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                    renderTimeline(); closeModal(); toast('🗑 記錄已刪除');
+                    renderTimeline(); closeModal(); toast('🗑 已刪除');
                 }
             };
 
-            // 日期折叠
             document.addEventListener('click', function(e) {
                 const divider = e.target.closest('.date-divider');
                 if (!divider) return;
@@ -564,13 +491,11 @@
 
             $('searchInput').addEventListener('input', function() {
                 const term = this.value.toLowerCase();
-                const items = document.querySelectorAll('.timeline-item');
-                items.forEach(item => {
+                document.querySelectorAll('.timeline-item').forEach(item => {
                     const data = (item.dataset.search || '').toLowerCase();
                     item.classList.toggle('hidden', term !== '' && !data.includes(term));
                 });
-                const dividers = document.querySelectorAll('.date-divider');
-                dividers.forEach(div => {
+                document.querySelectorAll('.date-divider').forEach(div => {
                     let next = div.nextElementSibling, visible = false;
                     while (next && !next.classList.contains('date-divider')) {
                         if (next.classList.contains('timeline-item') && !next.classList.contains('hidden')) { visible = true; break; }
@@ -589,30 +514,19 @@
                 return '宵夜';
             }
 
-            function generateSummary(mealId) {
-                const meal = meals.find(m => m.id === mealId);
-                if (!meal) return null;
-                const date = meal.date, timeStr = meal.time.replace(':', '');
-                const type = getMealType(meal.time), food = meal.foodName;
-                let drink = meal.drinkName || '';
-                if (drink && meal.drinkQuantity && meal.drinkQuantity > 1) drink += ` x${meal.drinkQuantity}`;
-                let summary = `${date} ${timeStr}: ${type} ${food}`;
-                if (drink) summary += ` ${drink}`;
-                return summary;
-            }
             window.copySummaryById = function(mealId) {
-                const summary = generateSummary(mealId);
-                if (!summary) return toast('❌ 記錄不存在');
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(summary).then(() => toast('📋 已複製摘要：' + summary)).catch(() => fallbackCopy(summary));
-                } else fallbackCopy(summary);
+                const meal = meals.find(m => m.id === mealId);
+                if (!meal) return toast('❌ 記錄不存在');
+                const summary = `${meal.date} ${meal.time.replace(':','')}: ${getMealType(meal.time)} ${meal.foodName}${meal.drinkName ? ' ' + meal.drinkName + (meal.drinkQuantity > 1 ? ' x'+meal.drinkQuantity : '') : ''}`;
+                const copy = text => {
+                    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                    document.body.appendChild(ta); ta.select();
+                    try { document.execCommand('copy'); toast('📋 已複製：' + text); } catch { toast('❌ 複製失敗'); }
+                    document.body.removeChild(ta);
+                };
+                if (navigator.clipboard) navigator.clipboard.writeText(summary).then(() => toast('📋 已複製：' + summary)).catch(() => copy(summary));
+                else copy(summary);
             };
-            function fallbackCopy(text) {
-                const textarea = document.createElement('textarea'); textarea.value = text; textarea.style.position = 'fixed'; textarea.style.opacity = '0';
-                document.body.appendChild(textarea); textarea.select();
-                try { document.execCommand('copy'); toast('📋 已複製摘要：' + text); } catch { toast('❌ 複製失敗'); }
-                document.body.removeChild(textarea);
-            }
 
             function getEmoji(name, ings) {
                 const map = { '雞':'🐔','豬':'🐷','牛':'🐮','羊':'🐑','魚':'🐟','蝦':'🦐','蟹':'🦀','海鮮':'🦞','蛋':'🥚','菜':'🥬','麵':'🍜','飯':'🍚','粉':'🍝','粥':'🥣','包':'🥟','湯':'🍲','腸粉':'🫔','菇':'🍄','豆':'🫘','檸檬':'🍋','水':'💧','茶':'🍵','咖啡':'☕','奶':'🥛','啤酒':'🍺','紅酒':'🍷','白酒':'🥂','烈酒':'🥃','汽水':'🥤','氣泡水':'🫧','果汁':'🧃' };
@@ -624,17 +538,17 @@
             function renderTimeline() {
                 const container = $('timelineContainer'); container.innerHTML = '';
                 if (!meals.length) {
-                    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:48px;">📝</div><p>尚無飲食記錄</p><p>點擊右下角 ＋ 開始記錄</p></div>';
+                    container.innerHTML = '<div style="text-align:center;padding:60px;color:#888;">📝<br>尚無記錄</div>';
                     return;
                 }
                 const sorted = [...meals].sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));
                 let curDate = null;
-                sorted.forEach((meal, idx) => {
+                sorted.forEach(meal => {
                     if (meal.date !== curDate) {
                         const cnt = sorted.filter(m => m.date === meal.date).length;
                         const [y, m, d] = meal.date.split('-');
                         const week = ['日','一','二','三','四','五','六'][new Date(meal.date).getDay()];
-                        container.innerHTML += `<div class="date-divider" data-date="${meal.date}"><span class="arrow">▼</span> 📅 ${y}年${+m}月${+d}日 星期${week} <span class="meal-badge">${cnt} 餐</span></div>`;
+                        container.innerHTML += `<div class="date-divider"><span class="arrow">▼</span> 📅 ${y}年${+m}月${+d}日 星期${week} <span class="meal-badge">${cnt}餐</span></div>`;
                         curDate = meal.date;
                     }
                     const ings = meal.ingredients || [], notes = meal.notes || [];
@@ -642,20 +556,18 @@
                     const ingTags = ings.filter(i => !drinkKeys.includes(i)).map(i => `<span class="tag ing">${i}</span>`).join('');
                     const drinkTags = ings.filter(i => drinkKeys.includes(i)).map(i => `<span class="tag drink">${i}</span>`).join('');
                     const noteTags = notes.map(n => `<span class="tag note">${n}</span>`).join('');
-                    const imgHtml = meal.imageUrl ? `<img src="${meal.imageUrl}" class="thumb" onclick="event.stopPropagation();showLightbox('${meal.imageUrl.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">` : '';
-                    const qtyText = (meal.drinkName && meal.drinkQuantity > 1) ? ` x${meal.drinkQuantity}杯` : '';
-                    const drinkNameHtml = meal.drinkName ? `<div style="font-size:14px; color:var(--text-secondary); margin-top:4px;">🥤 ${meal.drinkName}${qtyText}</div>` : '';
-                    const emoji = getEmoji(meal.foodName + meal.drinkName, ings);
+                    const imgHtml = meal.imageUrl ? `<img src="${meal.imageUrl}" class="thumb" onclick="showLightbox('${meal.imageUrl}')" onerror="this.style.display='none'">` : '';
+                    const qty = meal.drinkName && meal.drinkQuantity > 1 ? ` x${meal.drinkQuantity}杯` : '';
                     container.innerHTML += `
-                        <div class="timeline-item" data-search="${(meal.foodName + ' ' + (meal.drinkName||'') + ' ' + ings.join(' ') + ' ' + notes.join(' ') + ' ' + meal.date).toLowerCase()}">
+                        <div class="timeline-item" data-search="${(meal.foodName + ' ' + (meal.drinkName||'') + ' ' + ings.join(' ')).toLowerCase()}">
                             <div class="marker"></div>
                             <div class="card">
-                                <button class="edit-btn" onclick="openModal(${meal.id})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                <button class="copy-btn" onclick="event.stopPropagation(); copySummaryById(${meal.id})" title="複製摘要"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-                                <div class="card-header"><span>🕐 ${meal.time}</span><span class="meal-badge">${getMealType(meal.time)}</span></div>
-                                <div class="food-title"><span class="emoji">${emoji}</span>${meal.foodName}${imgHtml}</div>
-                                ${drinkNameHtml}
-                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${ingTags}${drinkTags}${noteTags}</div>
+                                <button class="edit-btn" onclick="openModal(${meal.id})"><svg width="18" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>
+                                <button class="copy-btn" onclick="event.stopPropagation(); copySummaryById(${meal.id})">📋</button>
+                                <div>🕐 ${meal.time} <span class="meal-badge">${getMealType(meal.time)}</span></div>
+                                <div class="food-title"><span class="emoji">${getEmoji(meal.foodName+meal.drinkName, ings)}</span>${meal.foodName}${imgHtml}</div>
+                                ${meal.drinkName ? `<div style="font-size:14px;color:var(--text-secondary);">🥤 ${meal.drinkName}${qty}</div>` : ''}
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${ingTags}${drinkTags}${noteTags}</div>
                             </div>
                         </div>`;
                 });
@@ -663,97 +575,48 @@
 
             const btnTop = $('btnScrollTop'), btnBottom = $('btnScrollBottom');
             window.addEventListener('scroll', () => {
-                const y = window.scrollY, max = document.body.scrollHeight - window.innerHeight;
+                const y = window.scrollY, max = document.body.scrollHeight - innerHeight;
                 btnTop.classList.toggle('visible', y > 300); btnBottom.classList.toggle('visible', y < max - 100);
             });
-            btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-            btnBottom.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+            btnTop.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+            btnBottom.addEventListener('click', () => scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
 
-            function getWeeklyRange() {
+            function getWeekRange() {
                 const now = new Date(); const day = now.getDay();
                 const start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0);
                 const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
                 return { start, end };
             }
-            function getMonthlyRange() {
+            function getMonthRange() {
                 const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), 1);
-                const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23,59,59,999);
-                return { start, end };
+                return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59,999) };
             }
-            function filterMealsByRange(meals, range) { return meals.filter(m => { const d = new Date(m.date); return d >= range.start && d <= range.end; }); }
-            function countByNotes(mealsSubset, keywords) { return mealsSubset.filter(m => m.notes.some(n => keywords.includes(n))).length; }
-            function generateStatsHTML(title, subset) {
-                const alcoholKeys = ['啤酒','紅酒','白酒','烈酒'], spicyKeys = ['大辣','中辣','小辣','走辣'];
-                const sweetKeys = ['少甜','走甜'], sauceKeys = ['少醬','走醬'];
-                const foodCount = {}, drinkCount = {};
-                subset.forEach(m => { foodCount[m.foodName] = (foodCount[m.foodName]||0)+1; if (m.drinkName) drinkCount[m.drinkName] = (drinkCount[m.drinkName]||0)+1; });
-                const topFood = Object.entries(foodCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
-                const topDrink = Object.entries(drinkCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
-                const alcoholCnt = subset.filter(m => (m.ingredients||[]).some(i => alcoholKeys.includes(i))).length;
-                const spicyCnt = countByNotes(subset, spicyKeys);
-                const hotCnt = countByNotes(subset, ['熱']), coldCnt = countByNotes(subset, ['凍']);
-                const sweetCnt = countByNotes(subset, sweetKeys), sauceCnt = countByNotes(subset, sauceKeys);
-                return `<div style="margin-bottom:16px;"><div class="stat-period">${title}</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:12px;">
-                        <div style="flex:1;min-width:120px;background:var(--card-bg);border-radius:12px;padding:12px;"><b>🔥 熱門食物</b><br>${topFood}</div>
-                        <div style="flex:1;min-width:120px;background:var(--card-bg);border-radius:12px;padding:12px;"><b>🥤 熱門飲品</b><br>${topDrink}</div>
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
-                        <span class="stat-badge">🍯 少甜/走甜 ${sweetCnt}</span><span class="stat-badge">🥫 少醬/走醬 ${sauceCnt}</span>
-                        <span class="stat-badge">🍺 飲酒 ${alcoholCnt}</span><span class="stat-badge">🌶️ 食辣 ${spicyCnt}</span>
-                        <span class="stat-badge">🧊 凍飲 ${coldCnt}</span><span class="stat-badge">☕ 熱飲 ${hotCnt}</span>
-                    </div></div>`;
+            function filterMeals(range) { return meals.filter(m => { const d = new Date(m.date); return d >= range.start && d <= range.end; }); }
+            function countNotes(sub, keys) { return sub.filter(m => m.notes.some(n => keys.includes(n))).length; }
+            function statHTML(title, sub) {
+                const food = {}, drink = {};
+                sub.forEach(m => { food[m.foodName] = (food[m.foodName]||0)+1; if (m.drinkName) drink[m.drinkName] = (drink[m.drinkName]||0)+1; });
+                const topFood = Object.entries(food).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
+                const topDrink = Object.entries(drink).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
+                return `<div style="margin-bottom:12px;"><b>${title}</b></div>
+                <div style="display:flex;gap:12px;margin-bottom:8px;"><div style="flex:1;background:var(--card-bg);padding:8px;">🔥食物 ${topFood}</div><div style="flex:1;background:var(--card-bg);padding:8px;">🥤飲品 ${topDrink}</div></div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;"><span class="stat-badge">🍯少/走甜 ${countNotes(sub,['少甜','走甜'])}</span><span class="stat-badge">🥫少/走醬 ${countNotes(sub,['少醬','走醬'])}</span><span class="stat-badge">🍺酒 ${sub.filter(m=>(m.ingredients||[]).some(i=>['啤酒','紅酒','白酒','烈酒'].includes(i))).length}</span><span class="stat-badge">🌶辣 ${countNotes(sub,['大辣','中辣','小辣','走辣'])}</span><span class="stat-badge">🧊凍飲 ${countNotes(sub,['凍'])}</span><span class="stat-badge">☕熱飲 ${countNotes(sub,['熱'])}</span></div>`;
             }
 
             $('toggleStatsBtn').addEventListener('click', () => {
                 const panel = $('statsPanel');
                 if (panel.style.display === 'none') {
-                    const weekRange = getWeeklyRange(), monthRange = getMonthlyRange();
-                    const weekMeals = filterMealsByRange(meals, weekRange), monthMeals = filterMealsByRange(meals, monthRange);
-                    const weekTitle = `📅 本週 (${weekRange.start.toLocaleDateString('zh-HK')} - ${weekRange.end.toLocaleDateString('zh-HK')})`;
-                    const monthTitle = `📆 本月 (${monthRange.start.toLocaleDateString('zh-HK')} - ${monthRange.end.toLocaleDateString('zh-HK')})`;
-                    $('statsContent').innerHTML = generateStatsHTML(weekTitle, weekMeals) + generateStatsHTML(monthTitle, monthMeals);
+                    const week = filterMeals(getWeekRange()), month = filterMeals(getMonthRange());
+                    $('statsContent').innerHTML = statHTML('本週', week) + statHTML('本月', month);
                     panel.style.display = 'block';
                 } else panel.style.display = 'none';
             });
 
-            // 初始化
             renderIngredientToggles();
             $('fabAdd').addEventListener('click', () => openModal());
             renderTimeline();
             window.scrollTo({ top: 0 });
-
-            window.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none';
-            });
-
-            // 修复导入/导出时 meals 重新赋值
-            window.exportData = function() {
-                const blob = new Blob([JSON.stringify(meals, null, 2)], { type: 'application/json' });
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                a.download = `飲食備份_${new Date().toISOString().slice(0,10)}.json`; a.click();
-                toast('📥 已匯出');
-            };
-            window.importData = function(e) {
-                const file = e.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    try {
-                        const data = JSON.parse(ev.target.result);
-                        if (!Array.isArray(data)) throw new Error();
-                        if (confirm(`匯入 ${data.length} 筆？按確定替換，取消合併`)) {
-                            meals = data;
-                        } else {
-                            const ids = new Set(meals.map(m => m.id));
-                            data.forEach(d => { if (!ids.has(d.id)) meals.push(d); ids.add(d.id); });
-                        }
-                        localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                        renderTimeline(); toast('📤 匯入完成');
-                    } catch { toast('❌ 格式錯誤'); }
-                };
-                reader.readAsText(file); e.target.value = '';
-            };
+            window.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; });
         })();
     </script>
 </body>
