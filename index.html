@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飲食記錄時間線 (終極版)</title>
+    <style>
+        /* ==================== CSS 變數 (亮色模式) ==================== */
+        :root {
+            --bg: #f0f2f5;
+            --bg-pattern: #e8eaed;
+            --header-bg: #ff9800;
+            --header-text: #fff;
+            --card-bg: #ffffff;
+            --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            --text-primary: #1a1a1a;
+            --text-secondary: #5f6368;
+            --text-muted: #9aa0a6;
+            --border: #e0e0e0;
+            --divider-bg: #fff3e0;
+            --divider-text: #e65100;
+            --timeline-line: #ffcc80;
+            --marker-bg: #ff9800;
+            --marker-ring: #fff;
+            --tag-ing-bg: #fff3e0;
+            --tag-ing-text: #ef6c00;
+            --tag-note-bg: #e3f2fd;
+            --tag-note-text: #1565c0;
+            --modal-overlay: rgba(0, 0, 0, 0.55);
+            --input-bg: #fff;
+            --input-border: #d0d5dd;
+            --toggle-bg: #fff;
+            --toggle-border: #d0d5dd;
+            --toggle-text: #555;
+            --btn-cancel-bg: #eee;
+            --btn-cancel-text: #333;
+            --stat-bg: #fafbfc;
+            --stat-border: #e8eaed;
+            --toast-bg: #333;
+            --toast-text: #fff;
+            --search-bg: #fff;
+            --search-border: #e0e0e0;
+            --search-focus-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15);
+            --fab-shadow: 0 4px 16px rgba(255, 152, 0, 0.4);
+            --scrollbar-thumb: #ccc;
+            --scrollbar-track: transparent;
+        }
+
+        /* ==================== 暗色模式 ==================== */
+        body.dark {
+            --bg: #1a1d21;
+            --bg-pattern: #22262b;
+            --header-bg: #e67e00;
+            --header-text: #f5f5f5;
+            --card-bg: #262a30;
+            --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.40);
+            --text-primary: #e8eaed;
+            --text-secondary: #b0b5bb;
+            --text-muted: #7a7f85;
+            --border: #3a3e45;
+            --divider-bg: #3d2e1a;
+            --divider-text: #ffb74d;
+            --timeline-line: #5d4037;
+            --marker-bg: #ff9800;
+            --marker-ring: #1a1d21;
+            --tag-ing-bg: #3d2e1a;
+            --tag-ing-text: #ffb74d;
+            --tag-note-bg: #1a2d3d;
+            --tag-note-text: #90caf9;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --input-bg: #2d3238;
+            --input-border: #4a4f55;
+            --toggle-bg: #2d3238;
+            --toggle-border: #4a4f55;
+            --toggle-text: #b0b5bb;
+            --btn-cancel-bg: #3a3e45;
+            --btn-cancel-text: #d0d5dd;
+            --stat-bg: #22262b;
+            --stat-border: #3a3e45;
+            --toast-bg: #e8eaed;
+            --toast-text: #1a1d21;
+            --search-bg: #2d3238;
+            --search-border: #4a4f55;
+            --search-focus-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+            --fab-shadow: 0 4px 20px rgba(230, 126, 0, 0.5);
+            --scrollbar-thumb: #555;
+            --scrollbar-track: #2a2d32;
+        }
+
+        /* ==================== 基礎設定 ==================== */
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Segoe UI', 'PingFang HK', 'Noto Sans HK', Tahoma, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+            transition: background-color 0.35s ease, color 0.35s ease;
+            min-height: 100vh;
+            background-image: radial-gradient(circle, var(--bg-pattern) 1px, transparent 1px);
+            background-size: 24px 24px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 自訂 scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+
+        /* ==================== Header ==================== */
+        header {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 14px 20px;
+            font-size: 19px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.3px;
+            transition: background 0.35s ease;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-icon {
+            font-size: 24px;
+            animation: bounce-icon 2s ease-in-out infinite;
+        }
+        @keyframes bounce-icon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-6px);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            70% {
+                transform: translateY(-3px);
+            }
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-theme,
+        .btn-stats-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 0;
+            line-height: 1;
+        }
+        .btn-theme:hover,
+        .btn-stats-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.08);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .btn-stats-toggle.active-stats {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: #fff;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+
+        /* ==================== 主容器 ==================== */
+        .main-wrapper {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 0 16px 100px;
+        }
+
+        /* ==================== 搜尋列 ==================== */
+        .search-wrapper {
+            position: sticky;
+            top: 64px;
+            z-index: 90;
+            padding: 12px 0;
+            background: var(--bg);
+            transition: background 0.35s ease;
+        }
+        .search-inner {
+            display: flex;
+            align-items: center;
+            background: var(--search-bg);
+            border: 2px solid var(--search-border);
+            border-radius: 28px;
+            padding: 10px 16px;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .search-inner:focus-within {
+            border-color: #ff9800;
+            box-shadow: var(--search-focus-shadow);
+        }
+        .search-icon {
+            flex-shrink: 0;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: inherit;
+            min-width: 0;
+        }
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-clear {
+            display: none;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0 4px;
+            line-height: 1;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .search-clear:hover {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .search-clear.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-results-hint {
+            display: none;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            padding-left: 16px;
+        }
+        .search-results-hint.visible {
+            display: block;
+            animation: fadeInDown 0.25s ease;
+        }
+
+        /* ==================== 統計面板 ==================== */
+        .stats-panel {
+            background: var(--stat-bg);
+            border: 1px solid var(--stat-border);
+            border-radius: 14px;
+            padding: 0;
+            margin-bottom: 16px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease,
+                margin 0.35s ease, padding 0.35s ease;
+        }
+        .stats-panel.expanded {
+            max-height: 600px;
+            opacity: 1;
+            padding: 18px 16px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px 14px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff9800;
+            line-height: 1.1;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        .stats-detail-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .stats-detail-col {
+            flex: 1;
+            min-width: 160px;
+        }
+        .stats-detail-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stats-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .stats-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 2px;
+            background: var(--card-bg);
+            transition: background 0.2s;
+        }
+        .stats-list li:hover {
+            background: var(--stat-bg);
+        }
+        .stats-rank {
+            font-weight: 700;
+            color: #ff9800;
+            margin-right: 6px;
+            min-width: 18px;
+        }
+        .stats-count {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--stat-bg);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .stats-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .btn-sm {
+            padding: 7px 15px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-sm:hover {
+            background: #ff9800;
+            color: #fff;
+            border-color: #ff9800;
+        }
+        .btn-sm.export-btn:hover {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        .btn-sm.import-btn:hover {
+            background: #2196f3;
+            border-color: #2196f3;
+        }
+        #importFileInput {
+            display: none;
+        }
+
+        /* ==================== 時間線 ==================== */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            bottom: 8px;
+            left: 8px;
+            width: 3px;
+            background: var(--timeline-line);
+            border-radius: 2px;
+            z-index: 0;
+            transition: background 0.35s ease;
+        }
+        .date-divider {
+            background: var(--divider-bg);
+            color: var(--divider-text);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 18px;
+            border-radius: 22px;
+            font-weight: 700;
+            font-size: 13px;
+            margin: 8px 0 18px -10px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.35s ease;
+            letter-spacing: 0.3px;
+        }
+        .date-divider.hidden-by-search {
+            display: none !important;
+        }
+        .date-badge {
+            background: #ff9800;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 2px;
+            letter-spacing: 0.2px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 18px;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeInUp 0.4s ease forwards;
+            transition: all 0.3s ease;
+        }
+        .timeline-item.hidden-by-search {
+            display: none !important;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .timeline-item:nth-child(1) {
+            animation-delay: 0.02s;
+        }
+        .timeline-item:nth-child(2) {
+            animation-delay: 0.06s;
+        }
+        .timeline-item:nth-child(3) {
+            animation-delay: 0.10s;
+        }
+        .timeline-item:nth-child(4) {
+            animation-delay: 0.14s;
+        }
+        .timeline-item:nth-child(5) {
+            animation-delay: 0.18s;
+        }
+        .timeline-item:nth-child(n+6) {
+            animation-delay: 0.20s;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 16px;
+            left: -30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--marker-bg);
+            border: 3px solid var(--marker-ring);
+            box-shadow: 0 0 0 3px #ff9800;
+            z-index: 1;
+            transition: all 0.35s ease;
+            animation: pulse-marker 3s ease-in-out infinite;
+        }
+        @keyframes pulse-marker {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #ff9800;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(255, 152, 0, 0.25);
+            }
+        }
+        /* 不同時段顏色 */
+        .timeline-marker.meal-breakfast {
+            background-color: #ff9800;
+            box-shadow: 0 0 0 3px #ff9800;
+        }
+        .timeline-marker.meal-lunch {
+            background-color: #4caf50;
+            box-shadow: 0 0 0 3px #4caf50;
+        }
+        .timeline-marker.meal-tea {
+            background-color: #e91e63;
+            box-shadow: 0 0 0 3px #e91e63;
+        }
+        .timeline-marker.meal-dinner {
+            background-color: #2196f3;
+            box-shadow: 0 0 0 3px #2196f3;
+        }
+        .timeline-marker.meal-late {
+            background-color: #9c27b0;
+            box-shadow: 0 0 0 3px #9c27b0;
+        }
+        @keyframes pulse-marker-breakfast {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #ff9800;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(255, 152, 0, 0.25);
+            }
+        }
+        @keyframes pulse-marker-lunch {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #4caf50;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(76, 175, 80, 0.25);
+            }
+        }
+        @keyframes pulse-marker-tea {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #e91e63;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(233, 30, 99, 0.25);
+            }
+        }
+        @keyframes pulse-marker-dinner {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #2196f3;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(33, 150, 243, 0.25);
+            }
+        }
+        @keyframes pulse-marker-late {
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px #9c27b0;
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(156, 39, 176, 0.25);
+            }
+        }
+
+        .timeline-marker.meal-breakfast {
+            animation: pulse-marker-breakfast 3s ease-in-out infinite;
+        }
+        .timeline-marker.meal-lunch {
+            animation: pulse-marker-lunch 3s ease-in-out infinite;
+        }
+        .timeline-marker.meal-tea {
+            animation: pulse-marker-tea 3s ease-in-out infinite;
+        }
+        .timeline-marker.meal-dinner {
+            animation: pulse-marker-dinner 3s ease-in-out infinite;
+        }
+        .timeline-marker.meal-late {
+            animation: pulse-marker-late 3s ease-in-out infinite;
+        }
+
+        /* ==================== 食物卡片 ==================== */
+        .timeline-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px 18px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            border-left: 4px solid transparent;
+            cursor: default;
+        }
+        .timeline-card:hover {
+            box-shadow: var(--card-hover-shadow);
+            transform: translateY(-3px);
+        }
+        .timeline-card.border-breakfast {
+            border-left-color: #ff9800;
+        }
+        .timeline-card.border-lunch {
+            border-left-color: #4caf50;
+        }
+        .timeline-card.border-tea {
+            border-left-color: #e91e63;
+        }
+        .timeline-card.border-dinner {
+            border-left-color: #2196f3;
+        }
+        .timeline-card.border-late {
+            border-left-color: #9c27b0;
+        }
+        .time-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+            flex-wrap: wrap;
+        }
+        .time {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .meal-type-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .badge-breakfast {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .badge-lunch {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .badge-tea {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        .badge-dinner {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .badge-late {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        body.dark .badge-breakfast {
+            background: #3d2e1a;
+            color: #ffb74d;
+        }
+        body.dark .badge-lunch {
+            background: #1a3d1a;
+            color: #81c784;
+        }
+        body.dark .badge-tea {
+            background: #3d1a2a;
+            color: #f48fb1;
+        }
+        body.dark .badge-dinner {
+            background: #1a2d3d;
+            color: #90caf9;
+        }
+        body.dark .badge-late {
+            background: #2a1a3d;
+            color: #ce93d8;
+        }
+
+        .food-name {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            padding-right: 36px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .food-emoji {
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .food-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            transition: all 0.25s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+        .food-thumb:hover {
+            transform: scale(1.08);
+            border-color: #ff9800;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        .tags-container {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            align-items: center;
+        }
+        .tag-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-right: 2px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .tag-ingredient {
+            background-color: var(--tag-ing-bg);
+            color: var(--tag-ing-text);
+            padding: 4px 13px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tag-ingredient:hover {
+            transform: scale(1.04);
+        }
+        .tag-note {
+            background-color: var(--tag-note-bg);
+            color: var(--tag-note-text);
+            padding: 4px 13px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tag-note:hover {
+            transform: scale(1.04);
+        }
+        .edit-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+            z-index: 2;
+        }
+        .edit-btn:hover {
+            color: #ff9800;
+            background-color: rgba(255, 152, 0, 0.1);
+            transform: rotate(-15deg) scale(1.1);
+        }
+        .edit-btn svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        /* ==================== 空狀態 ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+            animation: fadeInUp 0.5s ease;
+        }
+        .empty-state-emoji {
+            font-size: 60px;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .empty-state-desc {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* ==================== FAB & 回到頂部 ==================== */
+        .fab-group {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 99;
+        }
+        .btn-back-to-top {
+            width: 42px;
+            height: 42px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            border: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .btn-back-to-top:hover {
+            background: #ff9800;
+            color: #fff;
+            border-color: #ff9800;
+            box-shadow: 0 4px 14px rgba(255, 152, 0, 0.3);
+        }
+        .fab {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: var(--fab-shadow);
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            line-height: 1;
+        }
+        .fab:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 24px rgba(255, 152, 0, 0.5);
+        }
+        .fab:active {
+            transform: scale(0.94);
+            transition: transform 0.1s;
+        }
+        .fab-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ==================== Modal ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 460px;
+            border-radius: 18px;
+            padding: 22px 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 19px;
+            color: var(--text-primary);
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row>div {
+            flex: 1;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="time"],
+        .form-group input[type="date"],
+        .form-group input[type="url"] {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.25s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+        }
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+            margin-top: 4px;
+        }
+        .toggle-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 10px;
+        }
+        .toggle-btn {
+            padding: 7px 15px;
+            border: 2px solid var(--toggle-border);
+            border-radius: 20px;
+            background-color: var(--toggle-bg);
+            color: var(--toggle-text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-family: inherit;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .toggle-btn.ingredient:hover {
+            border-color: #ffb74d;
+            color: #ef6c00;
+            background: #fff8f0;
+        }
+        .toggle-btn.ingredient.active {
+            background-color: #ff9800;
+            color: white;
+            border-color: #ff9800;
+            box-shadow: 0 2px 6px rgba(255, 152, 0, 0.3);
+            font-weight: 700;
+        }
+        .toggle-btn.note:hover {
+            border-color: #64b5f6;
+            color: #1565c0;
+            background: #f5faff;
+        }
+        .toggle-btn.note.active {
+            background-color: #2196f3;
+            color: white;
+            border-color: #2196f3;
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+            font-weight: 700;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 11px 22px;
+            border-radius: 24px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
+        }
+        .btn-cancel {
+            background-color: var(--btn-cancel-bg);
+            color: var(--btn-cancel-text);
+        }
+        .btn-cancel:hover {
+            opacity: 0.8;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+        }
+        .btn-save:hover {
+            box-shadow: 0 5px 18px rgba(255, 152, 0, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+            margin-right: auto;
+            box-shadow: 0 3px 10px rgba(244, 67, 54, 0.2);
+        }
+        .btn-delete:hover {
+            background-color: #d32f2f;
+            box-shadow: 0 5px 16px rgba(244, 67, 54, 0.35);
+        }
+
+        /* ==================== Toast ==================== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            padding: 10px 22px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            animation: toastIn 0.35s ease, toastOut 0.35s ease 2.4s forwards;
+            pointer-events: auto;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* ==================== 響應式 ==================== */
+        @media (max-width: 480px) {
+            .main-wrapper {
+                padding: 0 10px 90px;
+            }
+            .timeline {
+                padding-left: 26px;
+            }
+            .timeline-card {
+                padding: 14px 14px;
+            }
+            .food-name {
+                font-size: 15px;
+                padding-right: 32px;
+            }
+            .food-emoji {
+                font-size: 22px;
+            }
+            .food-thumb {
+                width: 36px;
+                height: 36px;
+            }
+            .fab-group {
+                bottom: 20px;
+                right: 16px;
+                gap: 10px;
+            }
+            .fab {
+                width: 50px;
+                height: 50px;
+                font-size: 26px;
+            }
+            .btn-back-to-top {
+                width: 36px;
+                height: 36px;
+                font-size: 17px;
+            }
+            .modal {
+                padding: 18px 14px;
+                border-radius: 14px;
+                max-height: 92vh;
+            }
+            .search-wrapper {
+                top: 56px;
+                padding: 8px 0;
+            }
+            .search-inner {
+                padding: 8px 12px;
+                border-radius: 22px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .stat-number {
+                font-size: 22px;
+            }
+            header {
+                padding: 12px 14px;
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== Header ==================== -->
+    <header>
+        <div class="header-left">
+            <span class="header-icon">🍽️</span>
+            <span>我的飲食時間線</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-stats-toggle" id="btnStatsToggle" title="統計面板" aria-label="切換統計面板">📊</button>
+            <button class="btn-theme" id="btnTheme" title="切換深淺色模式" aria-label="切換深淺色模式">🌙</button>
+        </div>
+    </header>
+
+    <!-- ==================== Toast 容器 ==================== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== 主容器 ==================== -->
+    <div class="main-wrapper">
+        <!-- 搜尋列 -->
+        <div class="search-wrapper" id="searchWrapper">
+            <div class="search-inner">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜尋食物、配料或備註..." autocomplete="off">
+                <button class="search-clear" id="searchClear" aria-label="清除搜尋">✕</button>
+            </div>
+            <div class="search-results-hint" id="searchHint"></div>
+        </div>
+
+        <!-- 統計面板 -->
+        <div class="stats-panel" id="statsPanel">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="stats-detail-row" id="statsDetailRow"></div>
+            <div class="stats-actions">
+                <button class="btn-sm export-btn" onclick="exportData()">📥 匯出資料</button>
+                <button class="btn-sm import-btn" onclick="document.getElementById('importFileInput').click()">📤 匯入資料</button>
+                <input type="file" id="importFileInput" accept=".json" onchange="importData(event)">
+                <button class="btn-sm" onclick="clearSearch()" style="margin-left:auto;">🔄 清除篩選</button>
+            </div>
+        </div>
+
+        <!-- 時間線 -->
+        <div class="timeline" id="timeline-container"></div>
+    </div>
+
+    <!-- ==================== FAB 群組 ==================== -->
+    <div class="fab-group">
+        <button class="btn-back-to-top" id="btnBackToTop" title="回到頂部" aria-label="回到頂部">⬆</button>
+        <button class="fab" id="fabAdd" onclick="openModal()" title="新增飲食記錄" aria-label="新增飲食記錄">+</button>
+    </div>
+
+    <!-- ==================== 飲食記錄 Modal ==================== -->
+    <div class="modal-overlay" id="mealModal">
+        <div class="modal">
+            <h2 id="modalTitle">新增飲食記錄</h2>
+            <input type="hidden" id="mealId">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="mealDate">📅 日期</label>
+                    <input type="date" id="mealDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="mealTime">⏰ 時間</label>
+                    <input type="time" id="mealTime" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="foodName">🍴 食品名稱</label>
+                <input type="text" id="foodName" placeholder="例如：干炒牛河、海南雞飯..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">🖼️ 食物圖片 URL (可選)</label>
+                <input type="url" id="imageUrl" placeholder="貼上圖片連結 (可選)" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label>🥩 配料 (可多選)</label>
+                <span class="section-label">肉類</span>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn ingredient" data-val="雞">🐔 雞</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="豬">🐷 豬</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="牛">🐮 牛</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="羊">🐑 羊</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="魚">🐟 魚</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="蝦">🦐 蝦</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="蟹">🦀 蟹</button>
+                </div>
+                <span class="section-label">主食</span>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn ingredient" data-val="飯">🍚 飯</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="麵">🍜 麵</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="粉">🍝 粉</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="粥">🥣 粥</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="包">🥟 包</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="腸粉">🫔 腸粉</button>
+                </div>
+                <span class="section-label">配菜及其他</span>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn ingredient" data-val="菜">🥬 菜</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="蛋">🥚 蛋</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="豆">🫘 豆</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="菇">🍄 菇</button>
+                    <button type="button" class="toggle-btn ingredient" data-val="湯">🍲 湯</button>
+                </div>
+                <input type="text" id="customIngredients" placeholder="其他配料 (用逗號 , 分隔)" style="margin-top:4px;">
+            </div>
+
+            <div class="form-group">
+                <label>📝 備註 (口味微調，每組單選)</label>
+                <span class="section-label">甜度</span>
+                <div class="toggle-group note-group" data-group="sweet">
+                    <button type="button" class="toggle-btn note" data-val="多甜">多甜</button>
+                    <button type="button" class="toggle-btn note" data-val="少甜">少甜</button>
+                    <button type="button" class="toggle-btn note" data-val="走甜">走甜</button>
+                </div>
+                <span class="section-label">醬量</span>
+                <div class="toggle-group note-group" data-group="sauce">
+                    <button type="button" class="toggle-btn note" data-val="多醬">多醬</button>
+                    <button type="button" class="toggle-btn note" data-val="少醬">少醬</button>
+                    <button type="button" class="toggle-btn note" data-val="走醬">走醬</button>
+                </div>
+                <span class="section-label">油量</span>
+                <div class="toggle-group note-group" data-group="oil">
+                    <button type="button" class="toggle-btn note" data-val="多油">多油</button>
+                    <button type="button" class="toggle-btn note" data-val="少油">少油</button>
+                    <button type="button" class="toggle-btn note" data-val="走油">走油</button>
+                </div>
+                <span class="section-label">青量</span>
+                <div class="toggle-group note-group" data-group="green">
+                    <button type="button" class="toggle-btn note" data-val="多青">多青</button>
+                    <button type="button" class="toggle-btn note" data-val="少青">少青</button>
+                    <button type="button" class="toggle-btn note" data-val="走青">走青</button>
+                </div>
+                <span class="section-label">辣度</span>
+                <div class="toggle-group note-group" data-group="spicy">
+                    <button type="button" class="toggle-btn note" data-val="大辣">🌶 大辣</button>
+                    <button type="button" class="toggle-btn note" data-val="中辣">中辣</button>
+                    <button type="button" class="toggle-btn note" data-val="小辣">小辣</button>
+                    <button type="button" class="toggle-btn note" data-val="走辣">走辣</button>
+                </div>
+                <span class="section-label">溫度</span>
+                <div class="toggle-group note-group" data-group="temp">
+                    <button type="button" class="toggle-btn note" data-val="凍">🧊 凍</button>
+                    <button type="button" class="toggle-btn note" data-val="常溫">常溫</button>
+                    <button type="button" class="toggle-btn note" data-val="熱">🔥 熱</button>
+                </div>
+                <span class="section-label">份量</span>
+                <div class="toggle-group note-group" data-group="portion">
+                    <button type="button" class="toggle-btn note" data-val="加大">加大</button>
+                    <button type="button" class="toggle-btn note" data-val="正常">正常</button>
+                    <button type="button" class="toggle-btn note" data-val="少份">少份</button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-delete" id="deleteBtn" onclick="deleteMeal()" style="display: none;">🗑 刪除</button>
+                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn btn-save" onclick="saveMeal()">💾 儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ==================== 食物 Emoji 映射表 ====================
+            const foodEmojiMap = {
+                '雞': '🐔',
+                '猪': '🐷',
+                '豬': '🐷',
+                '牛': '🐮',
+                '羊': '🐑',
+                '魚': '🐟',
+                '鱼': '🐟',
+                '蝦': '🦐',
+                '虾': '🦐',
+                '蟹': '🦀',
+                '蛋': '🥚',
+                '菜': '🥬',
+                '麵': '🍜',
+                '面': '🍜',
+                '飯': '🍚',
+                '饭': '🍚',
+                '粉': '🍝',
+                '粥': '🥣',
+                '包': '🥟',
+                '湯': '🍲',
+                '汤': '🍲',
+                '腸粉': '🫔',
+                '肠粉': '🫔',
+                '菇': '🍄',
+                '豆': '🫘',
+                '壽司': '🍣',
+                '寿司': '🍣',
+                '漢堡': '🍔',
+                '汉堡': '🍔',
+                '沙律': '🥗',
+                'pizza': '🍕',
+                'Pizza': '🍕',
+                '茶': '🍵',
+                '咖啡': '☕',
+                '果汁': '🧃',
+                '奶茶': '🧋',
+                '三文治': '🥪',
+                '三明治': '🥪',
+            };
+
+            function getFoodEmoji(foodName, ingredients) {
+                const searchText = (foodName + ' ' + (ingredients || []).join(' ')).toLowerCase();
+                for (const [key, emoji] of Object.entries(foodEmojiMap)) {
+                    if (searchText.includes(key.toLowerCase())) {
+                        return emoji;
+                    }
+                }
+                // 根據食物名稱關鍵字推測
+                if (/飯|rice/i.test(foodName)) return '🍚';
+                if (/麵|面|noodle/i.test(foodName)) return '🍜';
+                if (/粉/i.test(foodName)) return '🍝';
+                if (/湯|汤|soup/i.test(foodName)) return '🍲';
+                if (/包|bun|bread/i.test(foodName)) return '🥟';
+                if (/粥|congee/i.test(foodName)) return '🥣';
+                if (/沙律|salad/i.test(foodName)) return '🥗';
+                return '🍽️';
+            }
+
+            function getMealTypeFromTime(timeStr) {
+                if (!timeStr) return { type: 'dinner', label: '晚餐', cssClass: 'dinner', badgeClass: 'badge-dinner',
+                    borderClass: 'border-dinner' };
+                const [h, m] = timeStr.split(':').map(Number);
+                const totalMinutes = h * 60 + m;
+                if (totalMinutes >= 330 && totalMinutes < 630) return { type: 'breakfast', label: '早餐',
+                    cssClass: 'breakfast', badgeClass: 'badge-breakfast', borderClass: 'border-breakfast' };
+                if (totalMinutes >= 630 && totalMinutes < 900) return { type: 'lunch', label: '午餐', cssClass: 'lunch',
+                    badgeClass: 'badge-lunch', borderClass: 'border-lunch' };
+                if (totalMinutes >= 900 && totalMinutes < 1020) return { type: 'tea', label: '下午茶', cssClass: 'tea',
+                    badgeClass: 'badge-tea', borderClass: 'border-tea' };
+                if (totalMinutes >= 1020 && totalMinutes < 1320) return { type: 'dinner', label: '晚餐', cssClass: 'dinner',
+                    badgeClass: 'badge-dinner', borderClass: 'border-dinner' };
+                return { type: 'late', label: '宵夜', cssClass: 'late', badgeClass: 'badge-late', borderClass: 'border-late' };
+            }
+
+            // ==================== 數據管理 ====================
+            let meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [
+                { id: 1, date: "2026-04-25", time: "08:30", foodName: "沙嗲牛肉麵", ingredients: ["牛", "麵"],
+                    notes: ["少甜", "多醬"], imageUrl: "" },
+                { id: 2, date: "2026-04-25", time: "13:15", foodName: "海南雞飯", ingredients: ["雞", "飯", "菜"],
+                    notes: ["走青", "少油"], imageUrl: "" },
+                { id: 3, date: "2026-04-24", time: "19:30", foodName: "壽司", ingredients: ["魚", "飯"], notes: [],
+                    imageUrl: "" },
+            ];
+
+            // ==================== DOM 引用 ====================
+            const timelineContainer = document.getElementById('timeline-container');
+            const mealModal = document.getElementById('mealModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const mealIdInput = document.getElementById('mealId');
+            const mealDateInput = document.getElementById('mealDate');
+            const mealTimeInput = document.getElementById('mealTime');
+            const foodNameInput = document.getElementById('foodName');
+            const imageUrlInput = document.getElementById('imageUrl');
+            const customIngredientsInput = document.getElementById('customIngredients');
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const searchHint = document.getElementById('searchHint');
+            const statsPanel = document.getElementById('statsPanel');
+            const btnStatsToggle = document.getElementById('btnStatsToggle');
+            const btnTheme = document.getElementById('btnTheme');
+            const btnBackToTop = document.getElementById('btnBackToTop');
+            const toastContainer = document.getElementById('toastContainer');
+            const fabAdd = document.getElementById('fabAdd');
+
+            // ==================== 主題管理 ====================
+            function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            function loadTheme() {
+                const saved = localStorage.getItem('diet_theme');
+                const theme = saved || getSystemTheme();
+                applyTheme(theme);
+            }
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark');
+                    btnTheme.textContent = '☀️';
+                } else {
+                    document.body.classList.remove('dark');
+                    btnTheme.textContent = '🌙';
+                }
+            }
+
+            function toggleTheme() {
+                const isDark = document.body.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('diet_theme', newTheme);
+                showToast(newTheme === 'dark' ? '🌙 已切換到深色模式' : '☀️ 已切換到淺色模式');
+            }
+
+            btnTheme.addEventListener('click', toggleTheme);
+
+            // 監聽系統主題變化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('diet_theme')) {
+                    applyTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+
+            // ==================== Toast 通知 ====================
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, 2800);
+            }
+
+            // ==================== 統計面板 ====================
+            function updateStatsPanel() {
+                const statsGrid = document.getElementById('statsGrid');
+                const statsDetailRow = document.getElementById('statsDetailRow');
+
+                const totalRecords = meals.length;
+                const today = new Date().toISOString().split('T')[0];
+                const todayRecords = meals.filter(m => m.date === today).length;
+
+                // 計算本週記錄數
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - mondayOffset);
+                const mondayStr = monday.toISOString().split('T')[0];
+                const weekRecords = meals.filter(m => m.date >= mondayStr).length;
+
+                // 最常吃的食物 Top 5
+                const foodCount = {};
+                meals.forEach(m => {
+                    const name = m.foodName;
+                    foodCount[name] = (foodCount[name] || 0) + 1;
+                });
+                const topFoods = Object.entries(foodCount)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                // 最常用的配料 Top 5
+                const ingCount = {};
+                meals.forEach(m => {
+                    (m.ingredients || []).forEach(ing => {
+                        ingCount[ing] = (ingCount[ing] || 0) + 1;
+                    });
+                });
+                const topIngs = Object.entries(ingCount)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                // 渲染統計卡片
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${totalRecords}</div>
+                        <div class="stat-label">總記錄數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${todayRecords}</div>
+                        <div class="stat-label">今日記錄</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${weekRecords}</div>
+                        <div class="stat-label">本週記錄</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${Object.keys(foodCount).length}</div>
+                        <div class="stat-label">食物種類</div>
+                    </div>
+                `;
+
+                // 渲染詳細排行
+                let topFoodsHtml = '';
+                if (topFoods.length > 0) {
+                    topFoodsHtml = topFoods.map(([name, count], i) => `
+                        <li>
+                            <span><span class="stats-rank">#${i + 1}</span> ${name}</span>
+                            <span class="stats-count">${count} 次</span>
+                        </li>
+                    `).join('');
+                } else {
+                    topFoodsHtml = '<li style="justify-content:center;color:var(--text-muted);">暫無數據</li>';
+                }
+
+                let topIngsHtml = '';
+                if (topIngs.length > 0) {
+                    topIngsHtml = topIngs.map(([name, count], i) => `
+                        <li>
+                            <span><span class="stats-rank">#${i + 1}</span> ${name}</span>
+                            <span class="stats-count">${count} 次</span>
+                        </li>
+                    `).join('');
+                } else {
+                    topIngsHtml = '<li style="justify-content:center;color:var(--text-muted);">暫無數據</li>';
+                }
+
+                statsDetailRow.innerHTML = `
+                    <div class="stats-detail-col">
+                        <div class="stats-detail-title">🏆 最常吃食物</div>
+                        <ul class="stats-list">${topFoodsHtml}</ul>
+                    </div>
+                    <div class="stats-detail-col">
+                        <div class="stats-detail-title">🥩 常用配料</div>
+                        <ul class="stats-list">${topIngsHtml}</ul>
+                    </div>
+                `;
+            }
+
+            function toggleStatsPanel() {
+                const isExpanded = statsPanel.classList.contains('expanded');
+                if (isExpanded) {
+                    statsPanel.classList.remove('expanded');
+                    btnStatsToggle.classList.remove('active-stats');
+                } else {
+                    updateStatsPanel();
+                    statsPanel.classList.add('expanded');
+                    btnStatsToggle.classList.add('active-stats');
+                    // 滾動到統計面板
+                    statsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            btnStatsToggle.addEventListener('click', toggleStatsPanel);
+
+            // ==================== 搜尋過濾 ====================
+            function filterTimeline(searchTerm) {
+                const container = timelineContainer;
+                const children = Array.from(container.children);
+                const term = searchTerm.toLowerCase().trim();
+
+                if (!term) {
+                    children.forEach(child => child.classList.remove('hidden-by-search'));
+                    searchHint.classList.remove('visible');
+                    searchClear.classList.remove('visible');
+                    return;
+                }
+
+                searchClear.classList.add('visible');
+                let totalVisible = 0;
+
+                // 標記每個 timeline-item
+                children.forEach(child => {
+                    if (child.classList.contains('timeline-item')) {
+                        const searchData = (child.getAttribute('data-search') || '').toLowerCase();
+                        if (searchData.includes(term)) {
+                            child.classList.remove('hidden-by-search');
+                            totalVisible++;
+                        } else {
+                            child.classList.add('hidden-by-search');
+                        }
+                    }
+                });
+
+                // 處理 date-divider：如果後面沒有可見的 item，則隱藏
+                let hasVisibleAfter = false;
+                for (let i = children.length - 1; i >= 0; i--) {
+                    const child = children[i];
+                    if (child.classList.contains('timeline-item')) {
+                        if (!child.classList.contains('hidden-by-search')) {
+                            hasVisibleAfter = true;
+                        }
+                    } else if (child.classList.contains('date-divider')) {
+                        if (!hasVisibleAfter) {
+                            child.classList.add('hidden-by-search');
+                        } else {
+                            child.classList.remove('hidden-by-search');
+                        }
+                        hasVisibleAfter = false;
+                    }
+                }
+
+                // 更新提示
+                if (totalVisible > 0) {
+                    searchHint.textContent = `找到 ${totalVisible} 筆匹配記錄`;
+                    searchHint.classList.add('visible');
+                } else {
+                    searchHint.textContent = '沒有找到匹配的記錄 😢';
+                    searchHint.classList.add('visible');
+                }
+            }
+
+            function clearSearch() {
+                searchInput.value = '';
+                filterTimeline('');
+                searchInput.focus();
+            }
+
+            searchInput.addEventListener('input', function() {
+                filterTimeline(this.value);
+            });
+
+            searchClear.addEventListener('click', clearSearch);
+
+            // ESC 清除搜尋
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.activeElement === searchInput) {
+                    clearSearch();
+                }
+                if (e.key === 'Escape' && mealModal.style.display === 'flex') {
+                    closeModal();
+                }
+            });
+
+            // ==================== 回到頂部按鈕 ====================
+            function updateBackToTop() {
+                const scrollY = window.scrollY || window.pageYOffset;
+                if (scrollY > 400) {
+                    btnBackToTop.classList.add('visible');
+                } else {
+                    btnBackToTop.classList.remove('visible');
+                }
+            }
+
+            btnBackToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+
+            // ==================== 格式化 ====================
+            function formatDateString(dateStr) {
+                const date = new Date(dateStr);
+                if (isNaN(date)) return dateStr;
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                const dayBefore = new Date(today);
+                dayBefore.setDate(today.getDate() - 2);
+
+                const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+                const dayBeforeOnly = new Date(dayBefore.getFullYear(), dayBefore.getMonth(), dayBefore.getDate());
+
+                const diffDays = Math.round((todayOnly - dateOnly) / (1000 * 60 * 60 * 24));
+
+                let prefix = '';
+                if (diffDays === 0) prefix = '今天 · ';
+                else if (diffDays === 1) prefix = '昨天 · ';
+                else if (diffDays === 2) prefix = '前天 · ';
+
+                return prefix +
+                    `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+
+            function getDayOfWeek(dateStr) {
+                const date = new Date(dateStr);
+                if (isNaN(date)) return '';
+                const days = ['日', '一', '二', '三', '四', '五', '六'];
+                return '星期' + days[date.getDay()];
+            }
+
+            // ==================== 渲染時間線 ====================
+            function renderTimeline() {
+                timelineContainer.innerHTML = '';
+
+                if (meals.length === 0) {
+                    timelineContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-emoji">📝</div>
+                            <div class="empty-state-title">還沒有飲食記錄</div>
+                            <div class="empty-state-desc">點擊右下角的 <strong>＋</strong> 按鈕<br>開始記錄你嘅美食旅程吧！</div>
+                        </div>
+                    `;
+                    updateStatsPanel();
+                    return;
+                }
+
+                // 排序：日期降序，時間降序
+                meals.sort((a, b) => {
+                    const dateTimeA = a.date + ' ' + a.time;
+                    const dateTimeB = b.date + ' ' + b.time;
+                    return dateTimeB.localeCompare(dateTimeA);
+                });
+
+                let currentDate = null;
+                let todayCount = 0;
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                meals.forEach((meal, index) => {
+                    const mealIngredients = meal.ingredients || [];
+                    const mealNotes = meal.notes || [];
+                    const mealImageUrl = meal.imageUrl || '';
+                    const mealTypeInfo = getMealTypeFromTime(meal.time);
+                    const emoji = getFoodEmoji(meal.foodName, mealIngredients);
+
+                    // 日期分段
+                    if (meal.date !== currentDate) {
+                        const displayDate = formatDateString(meal.date);
+                        const dayOfWeek = getDayOfWeek(meal.date);
+                        let dateExtra = '';
+                        if (meal.date === todayStr) {
+                            const todayMealsCount = meals.filter(m => m.date === todayStr).length;
+                            dateExtra = `<span class="date-badge">${todayMealsCount} 餐</span>`;
+                        }
+                        const dividerHtml =
+                            `<div class="date-divider" data-date="${meal.date}">📅 ${displayDate} ${dayOfWeek} ${dateExtra}</div>`;
+                        timelineContainer.innerHTML += dividerHtml;
+                        currentDate = meal.date;
+                    }
+
+                    // 配料標籤
+                    let ingredientsHtml = '';
+                    if (mealIngredients.length > 0) {
+                        ingredientsHtml = `<div class="tags-row">
+                            <span class="tag-label">配料：</span>
+                            ${mealIngredients.map(ing => `<span class="tag-ingredient">${ing}</span>`).join('')}
+                        </div>`;
+                    }
+
+                    // 備註標籤
+                    let notesHtml = '';
+                    if (mealNotes.length > 0) {
+                        notesHtml = `<div class="tags-row">
+                            <span class="tag-label">備註：</span>
+                            ${mealNotes.map(note => `<span class="tag-note">${note}</span>`).join('')}
+                        </div>`;
+                    }
+
+                    // 圖片縮略圖
+                    let imageHtml = '';
+                    if (mealImageUrl && mealImageUrl.trim()) {
+                        imageHtml =
+                            `<img src="${mealImageUrl.trim()}" class="food-thumb" alt="食物圖片" loading="lazy" onclick="event.stopPropagation(); window.open('${mealImageUrl.trim()}', '_blank')" onerror="this.style.display='none'">`;
+                    }
+
+                    // 編輯按鈕 SVG
+                    const editIconSVG = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    `;
+
+                    // 建立搜尋用的 data 屬性
+                    const searchData = [
+                        meal.foodName,
+                        ...mealIngredients,
+                        ...mealNotes,
+                        mealTypeInfo.label,
+                    ].join(' ').toLowerCase();
+
+                    const itemHtml = `
+                        <div class="timeline-item" data-search="${searchData.replace(/"/g, '&quot;')}" data-date="${meal.date}" style="animation-delay:${index * 0.03}s">
+                            <div class="timeline-marker meal-${mealTypeInfo.cssClass}"></div>
+                            <div class="timeline-card border-${mealTypeInfo.cssClass}">
+                                <button class="edit-btn" onclick="event.stopPropagation(); openModal(${meal.id})" title="修改記錄" aria-label="修改記錄">
+                                    ${editIconSVG}
+                                </button>
+                                <div class="time-row">
+                                    <span class="time">🕐 ${meal.time}</span>
+                                    <span class="meal-type-badge badge-${mealTypeInfo.cssClass}">${mealTypeInfo.label}</span>
+                                </div>
+                                <div class="food-name">
+                                    <span class="food-emoji">${emoji}</span>
+                                    ${meal.foodName}
+                                    ${imageHtml}
+                                </div>
+                                <div class="tags-container">
+                                    ${ingredientsHtml}
+                                    ${notesHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    timelineContainer.innerHTML += itemHtml;
+                });
+
+                // 更新統計面板
+                updateStatsPanel();
+
+                // 如果搜尋框有內容，重新套用過濾
+                if (searchInput.value.trim()) {
+                    filterTimeline(searchInput.value);
+                }
+            }
+
+            // ==================== Modal 操作 ====================
+            function openModal(editId = null) {
+                // 清除所有著燈狀態
+                document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+                customIngredientsInput.value = '';
+                imageUrlInput.value = '';
+
+                if (editId) {
+                    const meal = meals.find(m => m.id === editId);
+                    if (!meal) return;
+                    mealIdInput.value = meal.id;
+                    mealDateInput.value = meal.date || '';
+                    mealTimeInput.value = meal.time || '';
+                    foodNameInput.value = meal.foodName || '';
+                    imageUrlInput.value = meal.imageUrl || '';
+
+                    // 點亮配料按鈕
+                    const customIngs = [];
+                    (meal.ingredients || []).forEach(ing => {
+                        const btn = document.querySelector(`.ingredient[data-val="${ing}"]`);
+                        if (btn) {
+                            btn.classList.add('active');
+                        } else {
+                            customIngs.push(ing);
+                        }
+                    });
+                    customIngredientsInput.value = customIngs.join(', ');
+
+                    // 點亮備註按鈕
+                    (meal.notes || []).forEach(note => {
+                        const btn = document.querySelector(`.note[data-val="${note}"]`);
+                        if (btn) btn.classList.add('active');
+                    });
+
+                    modalTitle.innerText = '✏️ 修改飲食記錄';
+                    deleteBtn.style.display = 'flex';
+                } else {
+                    mealIdInput.value = '';
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const date = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    mealDateInput.value = `${year}-${month}-${date}`;
+                    mealTimeInput.value = `${hours}:${minutes}`;
+                    foodNameInput.value = '';
+                    imageUrlInput.value = '';
+                    modalTitle.innerText = '🍴 新增飲食記錄';
+                    deleteBtn.style.display = 'none';
+                }
+
+                mealModal.style.display = 'flex';
+                // 自動聚焦到食物名稱
+                setTimeout(() => foodNameInput.focus(), 150);
+            }
+
+            function closeModal() {
+                mealModal.style.display = 'none';
+            }
+
+            // 點擊 modal 外部關閉
+            mealModal.addEventListener('click', function(e) {
+                if (e.target === mealModal) {
+                    closeModal();
+                }
+            });
+
+            function saveMeal() {
+                const idInput = mealIdInput.value;
+                const date = mealDateInput.value;
+                const time = mealTimeInput.value;
+                const foodName = foodNameInput.value.trim();
+                const imageUrl = imageUrlInput.value.trim();
+
+                if (!date || !time || !foodName) {
+                    showToast('⚠️ 請填寫日期、時間同食品名稱！');
+                    // 高亮空字段
+                    if (!date) mealDateInput.style.borderColor = '#f44336';
+                    if (!time) mealTimeInput.style.borderColor = '#f44336';
+                    if (!foodName) foodNameInput.style.borderColor = '#f44336';
+                    setTimeout(() => {
+                        mealDateInput.style.borderColor = '';
+                        mealTimeInput.style.borderColor = '';
+                        foodNameInput.style.borderColor = '';
+                    }, 2000);
+                    return;
+                }
+
+                // 收集配料
+                const ingredientsArray = [];
+                document.querySelectorAll('.ingredient.active').forEach(btn => {
+                    ingredientsArray.push(btn.getAttribute('data-val'));
+                });
+                const customText = customIngredientsInput.value;
+                if (customText.trim()) {
+                    customText.split(/[,，、]/).forEach(item => {
+                        const trimmed = item.trim();
+                        if (trimmed && !ingredientsArray.includes(trimmed)) {
+                            ingredientsArray.push(trimmed);
+                        }
+                    });
+                }
+
+                // 收集備註
+                const notesArray = [];
+                document.querySelectorAll('.note.active').forEach(btn => {
+                    notesArray.push(btn.getAttribute('data-val'));
+                });
+
+                if (idInput) {
+                    const index = meals.findIndex(m => m.id == idInput);
+                    if (index !== -1) {
+                        meals[index].date = date;
+                        meals[index].time = time;
+                        meals[index].foodName = foodName;
+                        meals[index].ingredients = ingredientsArray;
+                        meals[index].notes = notesArray;
+                        meals[index].imageUrl = imageUrl;
+                    }
+                    showToast('✅ 記錄已更新！');
+                } else {
+                    meals.push({
+                        id: Date.now(),
+                        date: date,
+                        time: time,
+                        foodName: foodName,
+                        ingredients: ingredientsArray,
+                        notes: notesArray,
+                        imageUrl: imageUrl,
+                    });
+                    showToast('🎉 新記錄已添加！');
+                }
+
+                saveAndRender();
+                closeModal();
+            }
+
+            function deleteMeal() {
+                const idInput = mealIdInput.value;
+                if (!idInput) return;
+                // 使用自定義確認（如果有的話）或原生 confirm
+                if (confirm('確定要刪除呢筆記錄嗎？\n此操作無法復原。')) {
+                    meals = meals.filter(m => m.id != idInput);
+                    saveAndRender();
+                    closeModal();
+                    showToast('🗑 記錄已刪除');
+                }
+            }
+
+            function saveAndRender() {
+                localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
+                renderTimeline();
+                // 如果統計面板是展開的，更新它
+                if (statsPanel.classList.contains('expanded')) {
+                    updateStatsPanel();
+                }
+            }
+
+            // ==================== 匯出 / 匯入 ====================
+            function exportData() {
+                const dataStr = JSON.stringify(meals, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const now = new Date();
+                const filename =
+                    `飲食記錄備份_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.json`;
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📥 資料已匯出！');
+            }
+
+            function importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (!Array.isArray(imported)) {
+                            throw new Error('格式不正確');
+                        }
+                        const action = confirm(
+                            `即將匯入 ${imported.length} 筆記錄。\n\n按「確定」替換現有數據\n按「取消」合併到現有數據（跳過重複ID）`
+                        );
+                        if (action) {
+                            // 替換
+                            meals = imported;
+                            showToast(`🔄 已替換為 ${imported.length} 筆記錄`);
+                        } else {
+                            // 合併
+                            const existingIds = new Set(meals.map(m => m.id));
+                            let addedCount = 0;
+                            imported.forEach(item => {
+                                if (!existingIds.has(item.id)) {
+                                    meals.push(item);
+                                    existingIds.add(item.id);
+                                    addedCount++;
+                                }
+                            });
+                            showToast(`📤 已合併 ${addedCount} 筆新記錄`);
+                        }
+                        saveAndRender();
+                    } catch (err) {
+                        showToast('❌ 匯入失敗：檔案格式不正確');
+                        console.error('Import error:', err);
+                    }
+                };
+                reader.readAsText(file);
+                // 重置 input 以便可以重複選擇相同檔案
+                event.target.value = '';
+            }
+
+            // 將 exportData 和 importData 暴露到全局
+            window.exportData = exportData;
+            window.importData = importData;
+
+            // ==================== Toggle 按鈕事件 ====================
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.toggle-btn');
+                if (!btn) return;
+
+                if (btn.classList.contains('ingredient')) {
+                    // 配料：多選 toggle
+                    btn.classList.toggle('active');
+                    // 添加漣漪效果
+                    addRippleEffect(btn, e);
+                } else if (btn.classList.contains('note')) {
+                    // 備註：同組單選
+                    const isCurrentlyActive = btn.classList.contains('active');
+                    const siblings = btn.parentElement.querySelectorAll('.note');
+                    siblings.forEach(s => s.classList.remove('active'));
+                    if (!isCurrentlyActive) {
+                        btn.classList.add('active');
+                    }
+                    addRippleEffect(btn, e);
+                }
+            });
+
+            function addRippleEffect(btn, event) {
+                const ripple = document.createElement('span');
+                ripple.className = 'fab-ripple';
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (event.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (event.clientY - rect.top - size / 2) + 'px';
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = btn.classList.contains('ingredient') ?
+                    'rgba(255,152,0,0.3)' : 'rgba(33,150,243,0.3)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.5s ease-out';
+                ripple.style.pointerEvents = 'none';
+                btn.style.position = 'relative';
+                btn.style.overflow = 'hidden';
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 500);
+            }
+
+            // ==================== FAB 漣漪效果 ====================
+            fabAdd.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.className = 'fab-ripple';
+                const size = 56;
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - fabAdd.getBoundingClientRect().left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - fabAdd.getBoundingClientRect().top - size / 2) + 'px';
+                fabAdd.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+
+            // ==================== 全局暴露 ====================
+            window.openModal = openModal;
+            window.closeModal = closeModal;
+            window.saveMeal = saveMeal;
+            window.deleteMeal = deleteMeal;
+            window.clearSearch = clearSearch;
+
+            // ==================== 初始化 ====================
+            function init() {
+                loadTheme();
+                renderTimeline();
+                updateBackToTop();
+                // 預設聚焦搜尋框（可選）
+                // searchInput.focus();
+            }
+
+            init();
+
+            console.log('🍽️ 飲食記錄時間線 (終極版) 已就緒');
+            console.log('   - 深色模式切換 ✅');
+            console.log('   - 搜尋過濾 ✅');
+            console.log('   - 統計面板 ✅');
+            console.log('   - 時段顏色標識 ✅');
+            console.log('   - 食物Emoji ✅');
+            console.log('   - 圖片URL支援 ✅');
+            console.log('   - 匯出/匯入 ✅');
+            console.log('   - 動畫效果 ✅');
+            console.log('   - Toast通知 ✅');
+        })();
+    </script>
+</body>
+</html>
