@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>飲食記錄時間線 · 精美動畫版</title>
+    <title>飲食記錄時間線 · 調整版</title>
     <style>
         :root {
             --bg: #f8f9fb; --card-bg: #ffffff; --text: #1e2126; --text-secondary: #5f6b7a;
             --border: #e2e6ed; --accent: #ff9800; --divider-bg: #fff3e0; --divider-text: #e65100;
             --timeline-line: #ffcc80; --tag-ing-bg: #fff3e0; --tag-ing-text: #ef6c00;
             --tag-note-bg: #e3f2fd; --tag-note-text: #1565c0; --tag-drink-bg: #e8f5e9;
-            --tag-drink-text: #2e7d32; --fab-shadow: 0 8px 24px rgba(255,152,0,0.45);
-            --modal-overlay: rgba(0,0,0,0.5); --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --tag-drink-text: #2e7d32; --tag-cook-bg: #fff0f5; --tag-cook-text: #c62828;
+            --fab-shadow: 0 8px 24px rgba(255,152,0,0.45); --modal-overlay: rgba(0,0,0,0.5);
         }
         body.dark {
             --bg: #1a1d23; --card-bg: #282c34; --text: #e8ecf1; --text-secondary: #b0b8c4;
             --border: #3a3f48; --divider-bg: #3d2e1a; --divider-text: #ffb74d;
             --timeline-line: #5d4037; --tag-ing-bg: #3d2e1a; --tag-ing-text: #ffb74d;
             --tag-note-bg: #1a2d3d; --tag-note-text: #90caf9; --tag-drink-bg: #1a3d1a;
-            --tag-drink-text: #81c784; --modal-overlay: rgba(0,0,0,0.8);
+            --tag-drink-text: #81c784; --tag-cook-bg: #3d1a1a; --tag-cook-text: #ef9a9a;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', 'PingFang HK', 'Noto Sans HK', system-ui, sans-serif;
             background: var(--bg); color: var(--text); min-height: 100vh;
             padding-bottom: 90px; -webkit-tap-highlight-color: transparent; user-select: none;
-            transition: background-color 0.3s, color 0.3s;
-            position: relative; overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s; position: relative; overflow-x: hidden;
         }
-        /* 动态背景纹路 */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: radial-gradient(circle, rgba(0,0,0,0.02) 1px, transparent 1px);
@@ -42,44 +40,43 @@
             position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             letter-spacing: 0.3px; backdrop-filter: blur(6px); animation: slideDown 0.5s ease;
         }
-        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } }
         .btn-icon {
             background: rgba(255,255,255,0.2); border: none; color: #fff; width: 38px; height: 38px;
             border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center;
             justify-content: center; margin-left: 8px; backdrop-filter: blur(4px); transition: 0.2s;
-            position: relative; overflow: hidden;
         }
-        .btn-icon::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.3); border-radius: 50%; transform: scale(0); transition: transform 0.3s; }
-        .btn-icon:hover::after { transform: scale(1); }
         .btn-icon:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
         .container { max-width: 620px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
         .search-bar {
             position: sticky; top: 64px; z-index: 45; background: var(--bg); padding: 12px 0;
-            backdrop-filter: blur(6px); transition: background 0.3s;
+            backdrop-filter: blur(6px); display: flex; gap: 8px; align-items: center;
         }
         .search-input {
-            width: 100%; padding: 12px 18px; border-radius: 30px; border: 2px solid var(--border);
+            flex: 1; padding: 12px 18px; border-radius: 30px; border: 2px solid var(--border);
             background: var(--card-bg); color: var(--text); font-size: 15px; outline: none;
             box-shadow: 0 2px 12px rgba(0,0,0,0.03); transition: 0.3s;
         }
-        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,152,0,0.15); transform: translateY(-2px); }
+        .year-filter {
+            padding: 12px 16px; border-radius: 30px; border: 2px solid var(--border);
+            background: var(--card-bg); color: var(--text); font-size: 15px; outline: none;
+            cursor: pointer; transition: 0.3s;
+        }
+        .year-filter:hover { border-color: var(--accent); }
         .timeline { position: relative; padding-left: 32px; margin-top: 16px; }
-        .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 3px; background: var(--timeline-line); border-radius: 2px; transform-origin: top; animation: lineGrow 0.8s ease-out; }
-        @keyframes lineGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 3px; background: var(--timeline-line); border-radius: 2px; animation: lineGrow 0.8s ease-out; }
+        @keyframes lineGrow { from { transform: scaleY(0); } }
         .date-divider {
             background: var(--divider-bg); color: var(--divider-text); padding: 8px 18px; border-radius: 24px;
             font-weight: 700; margin: 14px 0 18px -12px; display: inline-flex; align-items: center;
             gap: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
             white-space: nowrap; font-size: 14px; transition: 0.2s; animation: fadeInUp 0.5s ease backwards;
-            transform-origin: left; position: relative; overflow: hidden;
         }
-        .date-divider::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3)); transform: translateX(-100%); transition: 0.5s; }
-        .date-divider:hover::before { transform: translateX(100%); }
         .date-divider:hover { background: #ffe0b2; transform: scale(1.02); }
         .date-divider.collapsed .arrow { transform: rotate(-90deg); }
         .arrow { transition: 0.3s; display: inline-block; }
-        .meal-badge { background: #ff9800; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(255,152,0,0.3); }
-        .timeline-item { margin-bottom: 22px; position: relative; opacity: 0; transform: translateY(18px); animation: fadeInUp 0.5s ease forwards; }
+        .meal-badge { background: #ff9800; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 11px; }
+        .timeline-item { margin-bottom: 22px; position: relative; opacity: 0; transform: translateY(18px); animation: fadeInUp 0.4s ease forwards; }
         .timeline-item.hidden { display: none !important; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .marker {
@@ -92,92 +89,53 @@
             background: var(--card-bg); border-radius: 20px; padding: 20px 22px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.05); position: relative;
             border-left: 5px solid #ff9800; transition: all var(--transition);
-            animation: cardPop 0.4s ease backwards; cursor: default;
-            backdrop-filter: blur(2px);
+            animation: cardPop 0.4s ease backwards;
         }
         @keyframes cardPop { from { transform: scale(0.95); opacity: 0; } }
         .card:hover { transform: translateY(-6px); box-shadow: 0 18px 30px rgba(0,0,0,0.12); }
         .food-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .emoji { font-size: 28px; animation: bounceEmoji 2s infinite; }
-        @keyframes bounceEmoji { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } 50% { transform: translateY(0); } }
-        .thumb {
-            width: 52px; height: 52px; border-radius: 14px; object-fit: cover; cursor: pointer;
-            border: 2px solid var(--border); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
+        @keyframes bounceEmoji { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+        .thumb { width: 52px; height: 52px; border-radius: 14px; object-fit: cover; cursor: pointer; border: 2px solid var(--border); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         .thumb:hover { transform: scale(1.1) rotate(2deg); border-color: #ff9800; }
-        .tag { padding: 5px 14px; border-radius: 18px; font-size: 13px; font-weight: 600; display: inline-block; transition: 0.2s; }
+        .tag { padding: 5px 14px; border-radius: 18px; font-size: 13px; font-weight: 600; display: inline-block; cursor: pointer; transition: 0.2s; }
         .tag:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
         .tag.ing { background: var(--tag-ing-bg); color: var(--tag-ing-text); }
         .tag.note { background: var(--tag-note-bg); color: var(--tag-note-text); }
         .tag.drink { background: var(--tag-drink-bg); color: var(--tag-drink-text); }
-        .edit-btn, .copy-btn { position: absolute; right: 14px; background: none; border: none; color: #888; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; backdrop-filter: blur(4px); }
+        .tag.cook { background: var(--tag-cook-bg); color: var(--tag-cook-text); }
+        .edit-btn, .copy-btn { position: absolute; right: 14px; background: none; border: none; color: #888; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
         .edit-btn { top: 12px; } .copy-btn { top: 50px; }
         .edit-btn:hover, .copy-btn:hover { color: #ff9800; background: rgba(255,152,0,0.15); transform: rotate(-20deg) scale(1.1); }
         .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 60; }
-        .fab-round {
-            width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); color: #888;
-            border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-            transition: 0.3s; opacity: 0; pointer-events: none; backdrop-filter: blur(4px);
-        }
+        .fab-round { width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); color: #888; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.1); transition: 0.3s; opacity: 0; pointer-events: none; }
         .fab-round.visible { opacity: 1; pointer-events: auto; animation: bounceIn 0.5s ease; }
-        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .fab-round:hover { background: #ff9800; color: #fff; border-color: #ff9800; transform: translateY(-4px); }
-        .fab {
-            width: 60px; height: 60px; background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: #fff; border-radius: 50%; border: none; font-size: 30px; cursor: pointer;
-            box-shadow: var(--fab-shadow); display: flex; align-items: center; justify-content: center;
-            transition: 0.3s; position: relative; overflow: hidden; z-index: 1;
-        }
-        .fab:hover { transform: scale(1.08) rotate(5deg); box-shadow: 0 12px 28px rgba(255,152,0,0.5); }
-        .fab:active { transform: scale(0.95); }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--modal-overlay); z-index: 100; display: none;
-            justify-content: center; align-items: center; padding: 20px;
-            animation: fadeIn 0.2s ease; backdrop-filter: blur(4px);
-        }
-        .modal {
-            background: var(--card-bg); border-radius: 24px; width: 100%;
-            max-width: 460px; max-height: 85vh; display: flex; flex-direction: column;
-            padding: 24px; box-shadow: 0 24px 48px rgba(0,0,0,0.25);
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.2); } }
+        .fab-round:hover { background: #ff9800; color: #fff; border-color: #ff9800; }
+        .fab { width: 60px; height: 60px; background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; border-radius: 50%; border: none; font-size: 30px; cursor: pointer; box-shadow: var(--fab-shadow); display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .fab:hover { transform: scale(1.08); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal { background: var(--card-bg); border-radius: 24px; width: 100%; max-width: 460px; max-height: 85vh; display: flex; flex-direction: column; padding: 24px; box-shadow: 0 24px 48px rgba(0,0,0,0.25); animation: slideUp 0.4s ease; }
         @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
         .modal-scroll { overflow-y: auto; flex: 1; padding-right: 6px; }
-        .modal-footer {
-            display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;
-            padding-top: 14px; border-top: 1px solid var(--border);
-        }
-        .btn { padding: 10px 24px; border-radius: 26px; border: none; font-weight: 700; cursor: pointer; transition: 0.25s; position: relative; overflow: hidden; }
-        .btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.2); transform: scale(0); border-radius: inherit; transition: transform 0.4s; }
-        .btn:active::after { transform: scale(1); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .btn { padding: 10px 24px; border-radius: 26px; border: none; font-weight: 700; cursor: pointer; transition: 0.25s; }
         .btn-primary { background: #ff9800; color: #fff; }
-        .btn-primary:hover { background: #fb8c00; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,152,0,0.3); }
+        .btn-primary:hover { background: #fb8c00; }
         .btn-danger { background: #e53935; color: #fff; }
         .toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-        .toggle {
-            padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px;
-            background: transparent; color: var(--text-secondary); font-weight: 600;
-            cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
-        }
-        .toggle::before { content: ''; position: absolute; inset: 0; background: currentColor; opacity: 0; border-radius: inherit; transition: opacity 0.2s; }
-        .toggle:hover { border-color: var(--accent); }
+        .toggle { padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .toggle.ing.active { background: #ff9800; color: #fff; border-color: #ff9800; }
         .toggle.note.active { background: #2196f3; color: #fff; border-color: #2196f3; }
         .toggle.drink.active { background: #4caf50; color: #fff; border-color: #4caf50; }
+        .toggle.cook.active { background: #c62828; color: #fff; border-color: #c62828; }
         .upload-area { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-        .toast {
-            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-            background: #333; color: #fff; padding: 12px 28px; border-radius: 28px;
-            z-index: 200; animation: toastDown 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            backdrop-filter: blur(6px); font-weight: 500;
-        }
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 28px; border-radius: 28px; z-index: 200; animation: toastDown 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         @keyframes toastDown { from { opacity: 0; transform: translate(-50%, -20px); } }
         body.dark .toast { background: #f0f0f0; color: #1a1d23; }
         .stat-period { font-weight: 700; margin-bottom: 8px; }
-        .stat-badge { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; transition: 0.2s; }
-        .stat-badge:hover { transform: scale(1.05); }
+        .stat-badge { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; }
+        .undo-toast { background: #4caf50; color: #fff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -192,9 +150,15 @@
     <div class="container">
         <div class="search-bar">
             <input type="text" class="search-input" id="searchInput" placeholder="搜尋食物、配料、日期...">
+            <select class="year-filter" id="yearFilter"><option value="">全部年份</option></select>
         </div>
         <div id="statsPanel" style="display:none; background:var(--card-bg); border-radius:16px; padding:16px; margin-bottom:12px; box-shadow: 0 6px 16px rgba(0,0,0,0.05); animation: fadeInUp 0.4s ease;">
             <div id="statsContent"></div>
+            <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+                <button class="btn" onclick="exportData()" style="background:#4caf50; color:#fff;">📥 匯出資料</button>
+                <button class="btn" onclick="document.getElementById('importFileInput').click()" style="background:#2196f3; color:#fff;">📤 匯入資料</button>
+                <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
+            </div>
         </div>
         <div class="timeline" id="timelineContainer"></div>
     </div>
@@ -207,19 +171,34 @@
 
     <div class="modal-overlay" id="mealModal">
         <div class="modal">
-            <h3 id="modalTitle" style="margin-bottom:16px;">新增記錄</h3>
+            <h3 id="modalTitle">新增記錄</h3>
             <div class="modal-scroll">
                 <input type="hidden" id="mealId">
                 <label>📅 日期</label><input type="date" id="mealDate" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
                 <label>⏰ 時間</label><input type="time" id="mealTime" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
                 <label>🍜 食物名稱</label><input type="text" id="foodName" placeholder="例：海南雞飯" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
-                <label>🥤 飲品名稱</label>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <input type="text" id="drinkName" placeholder="例：凍檸茶" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
-                    <span>數量</span>
-                    <input type="number" id="drinkQty" value="1" min="1" max="99" style="width:80px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
-                    <span>杯</span>
+
+                <div style="display:flex; align-items:center; margin-top:12px;">
+                    <label style="margin:0;">🥩 配料</label>
+                    <button type="button" id="btnManageFoodIngredients" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">⚙️ 管理食物配料</button>
                 </div>
+                <div class="toggle-row" id="ingToggles"></div>
+
+                <label style="margin-top:12px;">🍳 方式</label>
+                <div class="toggle-row" id="cookToggles">
+                    <button class="toggle cook" data-val="炒">炒</button><button class="toggle cook" data-val="煎">煎</button><button class="toggle cook" data-val="炸">炸</button><button class="toggle cook" data-val="煮">煮</button><button class="toggle cook" data-val="燉">燉</button><button class="toggle cook" data-val="汆">汆</button><button class="toggle cook" data-val="滷">滷</button><button class="toggle cook" data-val="烤">烤</button><button class="toggle cook" data-val="烘">烘</button><button class="toggle cook" data-val="燙">燙</button><button class="toggle cook" data-val="煨">煨</button><button class="toggle cook" data-val="爆">爆</button><button class="toggle cook" data-val="蒸">蒸</button><button class="toggle cook" data-val="涼拌">涼拌</button>
+                </div>
+
+                <div style="display:flex; align-items:center; margin-top:12px;">
+                    <label style="margin:0;">🥤 飲品名稱</label>
+                    <button type="button" id="btnManageDrinkIngredients" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">⚙️ 管理飲品配料</button>
+                </div>
+                <div class="toggle-row" id="drinkToggles"></div>
+                <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+                    <span>🥤 杯數</span>
+                    <input type="number" id="drinkQty" value="1" min="1" max="99" style="width:80px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                </div>
+
                 <label>🖼️ 圖片</label>
                 <div class="upload-area">
                     <button type="button" id="btnUpload" class="btn" style="background:#eee; color:#333;">📷 相簿選擇</button>
@@ -227,14 +206,7 @@
                     <button type="button" id="btnRemoveImg" class="btn btn-danger" style="display:none;">移除</button>
                     <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
-                <div style="display:flex; align-items:center; margin-top:12px;">
-                    <label style="margin:0;">🥩 配料</label>
-                    <button type="button" id="btnManageIngredients" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">⚙️ 管理配料</button>
-                </div>
-                <div class="toggle-row" id="ingToggles"></div>
-                <label style="margin-top:12px;">🥤 飲品配料</label>
-                <div class="toggle-row" id="drinkToggles"></div>
-                <input type="text" id="customIng" placeholder="其他配料 (逗號分隔)" style="width:100%; padding:10px; margin-top:6px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+
                 <label style="margin-top:12px;">📝 備註</label>
                 <div class="toggle-row" data-group="sweet"><button class="toggle note" data-val="多甜">多甜</button><button class="toggle note" data-val="少甜">少甜</button><button class="toggle note" data-val="走甜">走甜(無糖)</button></div>
                 <div class="toggle-row" data-group="sauce"><button class="toggle note" data-val="多醬">多醬</button><button class="toggle note" data-val="少醬">少醬</button><button class="toggle note" data-val="走醬">走醬</button></div>
@@ -242,7 +214,6 @@
                 <div class="toggle-row" data-group="green"><button class="toggle note" data-val="多青">多青</button><button class="toggle note" data-val="少青">少青</button><button class="toggle note" data-val="走青">走青</button></div>
                 <div class="toggle-row" data-group="skin"><button class="toggle note" data-val="多皮">多皮</button><button class="toggle note" data-val="少皮">少皮</button><button class="toggle note" data-val="走皮">走皮</button></div>
                 <div class="toggle-row" data-group="spicy"><button class="toggle note" data-val="大辣">大辣</button><button class="toggle note" data-val="中辣">中辣</button><button class="toggle note" data-val="小辣">小辣</button><button class="toggle note" data-val="走辣">走辣</button></div>
-                <div class="toggle-row" data-group="temp"><button class="toggle note" data-val="凍">凍</button><button class="toggle note" data-val="常溫">常溫</button><button class="toggle note" data-val="熱">熱</button></div>
                 <div class="toggle-row" data-group="portion"><button class="toggle note" data-val="加大">加大</button><button class="toggle note" data-val="正常">正常</button><button class="toggle note" data-val="少份">少份</button></div>
             </div>
             <div class="modal-footer">
@@ -255,11 +226,8 @@
 
     <div class="modal-overlay" id="ingredientManageModal">
         <div class="modal">
-            <h3>⚙️ 配料管理</h3>
-            <div class="modal-scroll" id="manageScroll">
-                <div id="manageIngredientsList"></div>
-                <div id="manageRulesList" style="margin-top:16px;"></div>
-            </div>
+            <h3 id="manageTitle">配料管理</h3>
+            <div class="modal-scroll" id="manageScroll"></div>
             <div class="modal-footer">
                 <button class="btn" onclick="closeIngredientManage()">關閉</button>
             </div>
@@ -270,6 +238,10 @@
         (function() {
             const $ = id => document.getElementById(id);
             const meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
+
+            const cookingMethods = ['炒','煎','炸','煮','燉','汆','滷','烤','烘','燙','煨','爆','蒸','涼拌'];
+            const drinkPriority = ['凍','熱','常溫','檸檬','水','茶','咖啡','奶','啤酒','紅酒','白酒','烈酒','汽水','氣泡水','果汁'];
+
             const defaultIngredients = [
                 { name: '雞', isDrink: false }, { name: '豬', isDrink: false }, { name: '牛', isDrink: false }, { name: '羊', isDrink: false },
                 { name: '魚', isDrink: false }, { name: '蝦', isDrink: false }, { name: '蟹', isDrink: false }, { name: '海鮮', isDrink: false },
@@ -296,52 +268,77 @@
                 renderIngredientToggles();
             }
 
+            function sortDrinkIngredients(list) {
+                return list.slice().sort((a, b) => {
+                    const aIdx = drinkPriority.indexOf(a.name);
+                    const bIdx = drinkPriority.indexOf(b.name);
+                    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                    if (aIdx !== -1) return -1;
+                    if (bIdx !== -1) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+            }
+
             function renderIngredientToggles() {
                 const ingContainer = $('ingToggles'), drinkContainer = $('drinkToggles');
                 if (!ingContainer || !drinkContainer) return;
                 ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i => `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
-                drinkContainer.innerHTML = customIngredients.filter(i => i.isDrink).map(i => `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('');
+                const drinkList = sortDrinkIngredients(customIngredients.filter(i => i.isDrink));
+                drinkContainer.innerHTML = drinkList.map(i => `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('') + 
+                    `<button class="toggle drink" data-val="凍">🧊凍</button><button class="toggle drink" data-val="熱">☕熱</button><button class="toggle drink" data-val="常溫">🌡常溫</button>`;
             }
 
-            function renderManagePanel() {
-                const list = $('manageIngredientsList'), rulesList = $('manageRulesList');
-                list.innerHTML = `
-                    <div style="margin-bottom:12px;"><b>現有配料</b></div>
-                    ${customIngredients.map((ing, idx) => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="flex:1;">${ing.name} ${ing.isDrink ? '(飲品)' : '(食物)'}</span><button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteIngredient(${idx})">刪除</button></div>`).join('')}
-                    <div style="display:flex; gap:8px; margin-top:12px;">
-                        <input type="text" id="newIngredientName" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
-                        <select id="newIngredientType" style="padding:8px; border-radius:8px; border:1px solid var(--border);"><option value="food">食物</option><option value="drink">飲品</option></select>
-                        <button class="btn btn-primary" style="padding:8px 16px;" onclick="addIngredient()">新增</button>
-                    </div>`;
-                rulesList.innerHTML = `
-                    <div style="margin-bottom:12px;"><b>自動匹配規則</b></div>
-                    ${autoMatchRules.map((rule, idx) => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span>「${rule.keyword}」→ 配料「${rule.ingredientName}」</span><button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteRule(${idx})">刪除</button></div>`).join('')}
-                    <div style="display:flex; gap:8px; margin-top:12px;">
-                        <input type="text" id="newRuleKeyword" placeholder="關鍵詞" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
-                        <input type="text" id="newRuleIngredient" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
-                        <button class="btn btn-primary" style="padding:8px 16px;" onclick="addRule()">新增規則</button>
-                    </div>`;
+            function renderManagePanel(type) {
+                const container = $('manageScroll');
+                const title = $('manageTitle');
+                const filtered = customIngredients.filter(i => type === 'food' ? !i.isDrink : i.isDrink);
+                const sortedList = type === 'drink' ? sortDrinkIngredients(filtered) : filtered;
+                title.textContent = type === 'food' ? '🥩 食物配料管理' : '🥤 飲品配料管理';
+
+                let html = `<div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <input type="text" id="newManageIngredient" placeholder="新配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                    <button class="btn btn-primary" style="padding:8px 16px;" onclick="addManageIngredient('${type}')">+</button>
+                </div>`;
+
+                html += sortedList.map((ing, idx) => {
+                    const originalIdx = customIngredients.indexOf(ing);
+                    return `<div class="tag ing" style="cursor:pointer; margin:4px;" onclick="deleteManageIngredient(${originalIdx})">${ing.name}</div>`;
+                }).join(' ');
+
+                container.innerHTML = html;
             }
 
-            window.deleteIngredient = idx => { customIngredients.splice(idx, 1); saveCustomData(); renderManagePanel(); toast('配料已刪除'); };
-            window.addIngredient = () => {
-                const name = document.getElementById('newIngredientName')?.value.trim();
+            window.addManageIngredient = (type) => {
+                const input = document.getElementById('newManageIngredient');
+                const name = input?.value.trim();
                 if (!name) return toast('請輸入名稱');
                 if (customIngredients.some(i => i.name === name)) return toast('配料已存在');
-                customIngredients.push({ name, isDrink: document.getElementById('newIngredientType')?.value === 'drink' });
-                saveCustomData(); renderManagePanel(); toast('配料已新增');
+                customIngredients.push({ name, isDrink: type === 'drink' });
+                saveCustomData();
+                renderManagePanel(type);
+                toast('配料已新增');
             };
-            window.deleteRule = idx => { autoMatchRules.splice(idx, 1); saveCustomData(); renderManagePanel(); toast('規則已刪除'); };
-            window.addRule = () => {
-                const keyword = document.getElementById('newRuleKeyword')?.value.trim();
-                const ingredient = document.getElementById('newRuleIngredient')?.value.trim();
-                if (!keyword || !ingredient) return toast('請填寫完整');
-                autoMatchRules.push({ keyword, ingredientName: ingredient });
-                saveCustomData(); renderManagePanel(); toast('規則已新增');
+
+            window.deleteManageIngredient = (idx) => {
+                const ing = customIngredients[idx];
+                if (!ing) return;
+                if (confirm(`確定刪除配料「${ing.name}」？`)) {
+                    customIngredients.splice(idx, 1);
+                    saveCustomData();
+                    const type = ing.isDrink ? 'drink' : 'food';
+                    renderManagePanel(type);
+                    toast(`已刪除「${ing.name}」`);
+                }
             };
-            window.openIngredientManage = () => { renderManagePanel(); $('ingredientManageModal').style.display = 'flex'; };
-            window.closeIngredientManage = () => { $('ingredientManageModal').style.display = 'none'; };
-            document.getElementById('btnManageIngredients')?.addEventListener('click', openIngredientManage);
+
+            window.openIngredientManage = (type) => {
+                renderManagePanel(type);
+                $('ingredientManageModal').style.display = 'flex';
+            };
+            window.closeIngredientManage = () => $('ingredientManageModal').style.display = 'none';
+
+            document.getElementById('btnManageFoodIngredients')?.addEventListener('click', () => openIngredientManage('food'));
+            document.getElementById('btnManageDrinkIngredients')?.addEventListener('click', () => openIngredientManage('drink'));
 
             const themeBtn = $('themeBtn');
             if (localStorage.getItem('diet_theme') === 'dark' || (!localStorage.getItem('diet_theme') && matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -353,9 +350,17 @@
                 themeBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
             });
 
-            function toast(msg) {
-                const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
-                document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
+            function toast(msg, undoCallback) {
+                const t = document.createElement('div'); t.className = 'toast';
+                if (undoCallback) {
+                    t.innerHTML = `${msg} <button style="margin-left:12px; background:#fff; color:#333; border:none; padding:4px 12px; border-radius:12px; font-weight:600; cursor:pointer;">撤銷</button>`;
+                    t.classList.add('undo-toast');
+                    t.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); undoCallback(); t.remove(); });
+                } else {
+                    t.textContent = msg;
+                }
+                document.body.appendChild(t);
+                setTimeout(() => { if (t.parentNode) t.remove(); }, undoCallback ? 5000 : 2500);
             }
 
             $('btnUpload').addEventListener('click', () => $('fileInput').click());
@@ -394,18 +399,24 @@
 
             function autoSelectIngredients(foodName) {
                 document.querySelectorAll('.toggle.ing').forEach(b => b.classList.remove('active'));
-                if (/海鮮|海鲜|seafood/i.test(foodName)) document.querySelector(`.toggle.ing[data-val="海鮮"]`)?.classList.add('active');
                 customIngredients.filter(i => !i.isDrink).forEach(ing => {
                     if (foodName.includes(ing.name)) document.querySelector(`.toggle.ing[data-val="${ing.name}"]`)?.classList.add('active');
                 });
                 autoMatchRules.forEach(rule => {
-                    if (foodName.includes(rule.keyword)) document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
+                    if (foodName.includes(rule.keyword)) document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"]`)?.classList.add('active');
                 });
             }
 
-            function autoSelectDrinks(drinkName) {
+            function autoSelectCooking(foodName) {
+                document.querySelectorAll('.toggle.cook').forEach(b => b.classList.remove('active'));
+                cookingMethods.forEach(m => {
+                    if (foodName.includes(m)) document.querySelector(`.toggle.cook[data-val="${m}"]`)?.classList.add('active');
+                });
+            }
+
+            function autoSelectDrinks(foodName) {
                 document.querySelectorAll('.toggle.drink').forEach(b => b.classList.remove('active'));
-                const lower = drinkName.toLowerCase();
+                const lower = foodName.toLowerCase();
                 const alias = { '忌廉':'汽水','可樂':'汽水','雪碧':'汽水','芬達':'汽水','七喜':'汽水','百事':'汽水','coke':'汽水','汽水':'汽水','檸':'檸檬','檸檬':'檸檬','soda':'氣泡水','梳打':'氣泡水','氣泡水':'氣泡水','蘋果汁':'果汁','橙汁':'果汁','提子汁':'果汁','芒果汁':'果汁','果汁':'果汁','啡':'咖啡','咖啡':'咖啡','茶':'茶','水':'水','奶':'奶','啤酒':'啤酒','紅酒':'紅酒','白酒':'白酒','威士忌':'烈酒','白蘭地':'烈酒','伏特加':'烈酒','清酒':'烈酒','燒酒':'烈酒','酒':'啤酒' };
                 Object.entries(alias).forEach(([k, v]) => {
                     if (lower.includes(k)) {
@@ -413,27 +424,37 @@
                         document.querySelector(`.toggle.drink[data-val="${v}"]`)?.classList.add('active');
                     }
                 });
-                autoMatchRules.forEach(rule => { if (drinkName.includes(rule.keyword)) document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active'); });
+                // 温度自动选择
+                if (lower.includes('凍') || lower.includes('冰')) document.querySelector(`.toggle.drink[data-val="凍"]`)?.classList.add('active');
+                if (lower.includes('熱')) document.querySelector(`.toggle.drink[data-val="熱"]`)?.classList.add('active');
+                if (lower.includes('常溫')) document.querySelector(`.toggle.drink[data-val="常溫"]`)?.classList.add('active');
             }
 
             function autoSelectNotes(text) {
-                const map = { '走甜':'走甜','無糖':'走甜','少甜':'少甜','多甜':'多甜','多醬':'多醬','少醬':'少醬','走醬':'走醬','多油':'多油','少油':'少油','走油':'走油','多青':'多青','少青':'少青','走青':'走青','多皮':'多皮','少皮':'少皮','走皮':'走皮','大辣':'大辣','中辣':'中辣','小辣':'小辣','走辣':'走辣','凍':'凍','冰':'凍','常溫':'常溫','熱':'熱','加大':'加大','少份':'少份' };
+                const map = { '走甜':'走甜','無糖':'走甜','少甜':'少甜','多甜':'多甜','多醬':'多醬','少醬':'少醬','走醬':'走醬','多油':'多油','少油':'少油','走油':'走油','多青':'多青','少青':'少青','走青':'走青','多皮':'多皮','少皮':'少皮','走皮':'走皮','大辣':'大辣','中辣':'中辣','小辣':'小辣','走辣':'走辣','加大':'加大','少份':'少份' };
                 Object.entries(map).forEach(([k, v]) => { if (text.includes(k)) document.querySelector(`.toggle.note[data-val="${v}"]`)?.classList.add('active'); });
             }
 
             $('foodName').addEventListener('input', function() {
-                document.querySelectorAll('.toggle.ing, .toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
-                autoSelectIngredients(this.value); autoSelectDrinks(''); autoSelectNotes(this.value);
-            });
-            $('drinkName').addEventListener('input', function() {
-                document.querySelectorAll('.toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
-                autoSelectDrinks(this.value); autoSelectNotes(this.value);
+                document.querySelectorAll('.toggle.ing, .toggle.drink, .toggle.note, .toggle.cook').forEach(b => b.classList.remove('active'));
+                autoSelectIngredients(this.value);
+                autoSelectCooking(this.value);
+                autoSelectDrinks(this.value);
+                autoSelectNotes(this.value);
             });
 
             document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('tag')) {
+                    e.stopPropagation();
+                    const text = e.target.textContent.trim();
+                    $('searchInput').value = text;
+                    $('searchInput').dispatchEvent(new Event('input'));
+                    return;
+                }
                 if (e.target.classList.contains('toggle')) {
-                    if (e.target.classList.contains('ing') || e.target.classList.contains('drink')) e.target.classList.toggle('active');
-                    else if (e.target.classList.contains('note')) {
+                    if (e.target.classList.contains('ing') || e.target.classList.contains('drink') || e.target.classList.contains('cook')) {
+                        e.target.classList.toggle('active');
+                    } else if (e.target.classList.contains('note')) {
                         const group = e.target.parentElement;
                         if (e.target.classList.contains('active')) e.target.classList.remove('active');
                         else { group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); }
@@ -444,14 +465,14 @@
             window.openModal = function(id = null) {
                 currentEditId = id;
                 document.querySelectorAll('.toggle').forEach(b => b.classList.remove('active'));
-                $('customIng').value = ''; $('drinkName').value = ''; $('drinkQty').value = 1;
+                $('drinkQty').value = 1;
                 currentImageData = null; $('imgPreview').src = ''; $('imgPreview').style.display = 'none';
                 $('btnRemoveImg').style.display = 'none'; $('fileInput').value = '';
                 if (id) {
                     const meal = meals.find(m => m.id === id);
                     if (!meal) return;
                     $('mealId').value = meal.id; $('mealDate').value = meal.date; $('mealTime').value = meal.time;
-                    $('foodName').value = meal.foodName; $('drinkName').value = meal.drinkName || '';
+                    $('foodName').value = meal.foodName;
                     $('drinkQty').value = meal.drinkQuantity || 1;
                     if (meal.imageUrl) {
                         currentImageData = meal.imageUrl; $('imgPreview').src = meal.imageUrl;
@@ -460,7 +481,10 @@
                     (meal.ingredients||[]).forEach(ing => {
                         const btn = document.querySelector(`.toggle.ing[data-val="${ing}"], .toggle.drink[data-val="${ing}"]`);
                         if (btn) btn.classList.add('active');
-                        else $('customIng').value = $('customIng').value ? $('customIng').value+', '+ing : ing;
+                    });
+                    (meal.cooking || []).forEach(method => {
+                        const btn = document.querySelector(`.toggle.cook[data-val="${method}"]`);
+                        if (btn) btn.classList.add('active');
                     });
                     (meal.notes||[]).forEach(note => document.querySelector(`.toggle.note[data-val="${note}"]`)?.classList.add('active'));
                     $('modalTitle').textContent = '✏️ 修改記錄'; $('deleteBtn').style.display = 'inline-block';
@@ -469,7 +493,7 @@
                     const now = new Date();
                     $('mealDate').value = now.toISOString().split('T')[0];
                     $('mealTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                    $('foodName').value = ''; $('drinkName').value = '';
+                    $('foodName').value = '';
                     $('modalTitle').textContent = '🍴 新增記錄'; $('deleteBtn').style.display = 'none';
                 }
                 $('mealModal').style.display = 'flex';
@@ -478,15 +502,16 @@
             window.closeModal = () => $('mealModal').style.display = 'none';
 
             window.saveMeal = function() {
-                const date = $('mealDate').value, time = $('mealTime').value, foodName = $('foodName').value.trim(), drinkName = $('drinkName').value.trim();
+                const date = $('mealDate').value, time = $('mealTime').value, foodName = $('foodName').value.trim();
                 const drinkQty = parseInt($('drinkQty').value) || 1;
                 if (!date || !time || !foodName) return toast('❌ 請填寫完整');
                 const ings = [];
                 document.querySelectorAll('.toggle.ing.active').forEach(b => ings.push(b.dataset.val));
                 document.querySelectorAll('.toggle.drink.active').forEach(b => ings.push(b.dataset.val));
-                $('customIng').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean).forEach(c => { if (!ings.includes(c)) ings.push(c); });
+                const cooking = [];
+                document.querySelectorAll('.toggle.cook.active').forEach(b => cooking.push(b.dataset.val));
                 const notes = []; document.querySelectorAll('.toggle.note.active').forEach(b => notes.push(b.dataset.val));
-                const meal = { id: currentEditId || Date.now(), date, time, foodName, drinkName, drinkQuantity: drinkQty, ingredients: ings, notes, imageUrl: currentImageData || '' };
+                const meal = { id: currentEditId || Date.now(), date, time, foodName, drinkQuantity: drinkQty, ingredients: ings, cooking, notes, imageUrl: currentImageData || '' };
                 if (currentEditId) { const idx = meals.findIndex(m => m.id === currentEditId); if (idx !== -1) meals[idx] = meal; }
                 else meals.unshift(meal);
                 localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
@@ -495,12 +520,13 @@
 
             window.deleteMeal = function() {
                 if (!currentEditId) return;
-                if (confirm('確定刪除這筆記錄？')) {
-                    const idx = meals.findIndex(m => m.id === currentEditId);
-                    if (idx !== -1) meals.splice(idx, 1);
-                    localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                    renderTimeline(); closeModal(); toast('🗑 已刪除');
-                }
+                const idx = meals.findIndex(m => m.id === currentEditId);
+                if (idx === -1) return;
+                const deletedMeal = meals[idx];
+                meals.splice(idx, 1);
+                localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
+                renderTimeline(); closeModal();
+                toast('🗑 記錄已刪除', () => { meals.splice(idx, 0, deletedMeal); localStorage.setItem('diet_meals_v3', JSON.stringify(meals)); renderTimeline(); toast('✅ 已撤銷刪除'); });
             };
 
             document.addEventListener('click', function(e) {
@@ -529,12 +555,36 @@
                 });
             });
 
+            function updateYearFilter() {
+                const yearSelect = $('yearFilter');
+                const years = new Set(meals.map(m => m.date.substring(0,4)));
+                yearSelect.innerHTML = '<option value="">全部年份</option>' + [...years].sort().reverse().map(y => `<option value="${y}">${y}年</option>`).join('');
+            }
+            $('yearFilter').addEventListener('change', function() {
+                const year = this.value;
+                document.querySelectorAll('.timeline-item').forEach(item => {
+                    const date = item.dataset.search || '';
+                    if (year && !date.includes(year)) item.classList.add('hidden');
+                    else item.classList.remove('hidden');
+                });
+                document.querySelectorAll('.date-divider').forEach(div => {
+                    let next = div.nextElementSibling, visible = false;
+                    while (next && !next.classList.contains('date-divider')) {
+                        if (next.classList.contains('timeline-item') && !next.classList.contains('hidden')) { visible = true; break; }
+                        next = next.nextElementSibling;
+                    }
+                    div.classList.toggle('hidden', !visible);
+                });
+            });
+
             function getMealType(time) { const h = parseInt(time); if (h>=5&&h<10) return '早餐'; if (h>=10&&h<14) return '午餐'; if (h>=14&&h<17) return '下午茶'; if (h>=17&&h<22) return '晚餐'; return '宵夜'; }
 
             window.copySummaryById = function(mealId) {
                 const meal = meals.find(m => m.id === mealId);
                 if (!meal) return toast('❌ 記錄不存在');
-                const summary = `${meal.date} ${meal.time.replace(':','')}: ${getMealType(meal.time)} ${meal.foodName}${meal.drinkName ? ' ' + meal.drinkName + (meal.drinkQuantity > 1 ? ' x'+meal.drinkQuantity : '') : ''}`;
+                const ings = meal.ingredients || [], notes = meal.notes || [];
+                const drinkLabels = ings.filter(i => drinkPriority.includes(i) || customIngredients.some(ci => ci.isDrink && ci.name === i));
+                const summary = `${meal.date} ${meal.time.replace(':','')}: ${getMealType(meal.time)} ${meal.foodName}${meal.cooking?.length ? ' ['+meal.cooking.join('/')+']' : ''}${drinkLabels.length ? ' ' + drinkLabels.join(' ') : ''}${meal.drinkQuantity > 1 ? ' x'+meal.drinkQuantity : ''}`;
                 const copy = text => { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('📋 已複製：' + text); } catch { toast('❌ 複製失敗'); } document.body.removeChild(ta); };
                 if (navigator.clipboard) navigator.clipboard.writeText(summary).then(() => toast('📋 已複製：' + summary)).catch(() => copy(summary));
                 else copy(summary);
@@ -560,26 +610,39 @@
                         container.innerHTML += `<div class="date-divider"><span class="arrow">▼</span> 📅 ${y}年${+m}月${+d}日 星期${week} <span class="meal-badge">${cnt}餐</span></div>`;
                         curDate = meal.date;
                     }
-                    const ings = meal.ingredients || [], notes = meal.notes || [];
-                    const drinkKeys = customIngredients.filter(i => i.isDrink).map(i => i.name);
+                    const ings = meal.ingredients || [], notes = meal.notes || [], cooking = meal.cooking || [];
+                    const drinkKeys = customIngredients.filter(i => i.isDrink).map(i => i.name).concat(['凍','熱','常溫']);
+                    const tempTags = ings.filter(i => ['凍','熱','常溫'].includes(i));
+                    const otherDrinkTags = ings.filter(i => drinkKeys.includes(i) && !['凍','熱','常溫'].includes(i))
+                        .sort((a, b) => {
+                            const aIdx = drinkPriority.indexOf(a);
+                            const bIdx = drinkPriority.indexOf(b);
+                            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                            if (aIdx !== -1) return -1;
+                            if (bIdx !== -1) return 1;
+                            return a.localeCompare(b);
+                        });
                     const ingTags = ings.filter(i => !drinkKeys.includes(i)).map(i => `<span class="tag ing">${i}</span>`).join('');
-                    const drinkTags = ings.filter(i => drinkKeys.includes(i)).map(i => `<span class="tag drink">${i}</span>`).join('');
+                    const drinkTagsHtml = tempTags.map(i => `<span class="tag drink">${i}</span>`).join('') + otherDrinkTags.map(i => `<span class="tag drink">${i}</span>`).join('');
+                    const cookTags = cooking.map(c => `<span class="tag cook">${c}</span>`).join('');
                     const noteTags = notes.map(n => `<span class="tag note">${n}</span>`).join('');
                     const imgHtml = meal.imageUrl ? `<img src="${meal.imageUrl}" class="thumb" onclick="showLightbox('${meal.imageUrl}')" onerror="this.style.display='none'">` : '';
-                    const qty = meal.drinkName && meal.drinkQuantity > 1 ? ` x${meal.drinkQuantity}杯` : '';
+                    const drinkQtyText = meal.drinkQuantity > 1 ? ` x${meal.drinkQuantity}杯` : '';
+                    const drinkNameHtml = (tempTags.length + otherDrinkTags.length > 0) ? `<div style="font-size:14px;color:var(--text-secondary);">🥤 ${tempTags.concat(otherDrinkTags).join(' ')}${drinkQtyText}</div>` : '';
                     container.innerHTML += `
-                        <div class="timeline-item" data-search="${(meal.foodName + ' ' + (meal.drinkName||'') + ' ' + ings.join(' ')).toLowerCase()}">
+                        <div class="timeline-item" data-search="${(meal.foodName + ' ' + ings.join(' ') + ' ' + cooking.join(' ')).toLowerCase()}">
                             <div class="marker"></div>
                             <div class="card">
                                 <button class="edit-btn" onclick="openModal(${meal.id})"><svg width="18" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>
                                 <button class="copy-btn" onclick="event.stopPropagation(); copySummaryById(${meal.id})">📋</button>
                                 <div>🕐 ${meal.time} <span class="meal-badge">${getMealType(meal.time)}</span></div>
-                                <div class="food-title"><span class="emoji">${getEmoji(meal.foodName+meal.drinkName, ings)}</span>${meal.foodName}${imgHtml}</div>
-                                ${meal.drinkName ? `<div style="font-size:14px;color:var(--text-secondary);">🥤 ${meal.drinkName}${qty}</div>` : ''}
-                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${ingTags}${drinkTags}${noteTags}</div>
+                                <div class="food-title"><span class="emoji">${getEmoji(meal.foodName, ings)}</span>${meal.foodName}${imgHtml}</div>
+                                ${drinkNameHtml}
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${cookTags}${ingTags}${drinkTagsHtml}${noteTags}</div>
                             </div>
                         </div>`;
                 });
+                updateYearFilter();
             }
 
             const btnTop = $('btnScrollTop'), btnBottom = $('btnScrollBottom');
@@ -612,6 +675,34 @@
                     panel.style.display = 'block';
                 } else panel.style.display = 'none';
             });
+
+            window.exportData = function() {
+                const dataStr = JSON.stringify(meals, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `diet_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                toast('📥 資料已匯出');
+            };
+            window.importData = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!Array.isArray(data)) throw new Error('格式錯誤');
+                        if (confirm(`確定匯入 ${data.length} 筆記錄？`)) {
+                            meals.length = 0; meals.push(...data);
+                            localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
+                            renderTimeline(); toast(`✅ 已匯入 ${data.length} 筆記錄`);
+                        }
+                    } catch (err) { toast('❌ 檔案格式不正確'); }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
 
             renderIngredientToggles();
             $('fabAdd').addEventListener('click', () => openModal());
