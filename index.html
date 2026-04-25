@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>飲食記錄時間線 · 飲品數量與修復刪除</title>
+    <title>飲食記錄時間線 · 精美動畫版</title>
     <style>
         :root {
             --bg: #f8f9fb; --card-bg: #ffffff; --text: #1e2126; --text-secondary: #5f6b7a;
@@ -11,7 +11,7 @@
             --timeline-line: #ffcc80; --tag-ing-bg: #fff3e0; --tag-ing-text: #ef6c00;
             --tag-note-bg: #e3f2fd; --tag-note-text: #1565c0; --tag-drink-bg: #e8f5e9;
             --tag-drink-text: #2e7d32; --fab-shadow: 0 8px 24px rgba(255,152,0,0.45);
-            --modal-overlay: rgba(0,0,0,0.5);
+            --modal-overlay: rgba(0,0,0,0.5); --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         body.dark {
             --bg: #1a1d23; --card-bg: #282c34; --text: #e8ecf1; --text-secondary: #b0b8c4;
@@ -25,95 +25,159 @@
             font-family: 'Segoe UI', 'PingFang HK', 'Noto Sans HK', system-ui, sans-serif;
             background: var(--bg); color: var(--text); min-height: 100vh;
             padding-bottom: 90px; -webkit-tap-highlight-color: transparent; user-select: none;
-            background-image: radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px);
-            background-size: 28px 28px; transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative; overflow-x: hidden;
         }
+        /* 动态背景纹路 */
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.02) 1px, transparent 1px);
+            background-size: 28px 28px; pointer-events: none; z-index: 0;
+            animation: bgMove 40s linear infinite;
+        }
+        @keyframes bgMove { 0% { background-position: 0 0; } 100% { background-position: 28px 28px; } }
         header {
             background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; padding: 14px 20px;
             font-weight: 700; display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            letter-spacing: 0.3px; backdrop-filter: blur(6px);
+            position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            letter-spacing: 0.3px; backdrop-filter: blur(6px); animation: slideDown 0.5s ease;
         }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .btn-icon {
             background: rgba(255,255,255,0.2); border: none; color: #fff; width: 38px; height: 38px;
             border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center;
             justify-content: center; margin-left: 8px; backdrop-filter: blur(4px); transition: 0.2s;
+            position: relative; overflow: hidden;
         }
+        .btn-icon::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.3); border-radius: 50%; transform: scale(0); transition: transform 0.3s; }
+        .btn-icon:hover::after { transform: scale(1); }
         .btn-icon:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
-        .container { max-width: 620px; margin: 0 auto; padding: 0 16px; }
-        .search-bar { position: sticky; top: 64px; z-index: 45; background: var(--bg); padding: 12px 0; }
+        .container { max-width: 620px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
+        .search-bar {
+            position: sticky; top: 64px; z-index: 45; background: var(--bg); padding: 12px 0;
+            backdrop-filter: blur(6px); transition: background 0.3s;
+        }
         .search-input {
             width: 100%; padding: 12px 18px; border-radius: 30px; border: 2px solid var(--border);
             background: var(--card-bg); color: var(--text); font-size: 15px; outline: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.2s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03); transition: 0.3s;
         }
-        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,152,0,0.1); }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,152,0,0.15); transform: translateY(-2px); }
         .timeline { position: relative; padding-left: 32px; margin-top: 16px; }
-        .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 3px; background: var(--timeline-line); border-radius: 2px; }
+        .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 3px; background: var(--timeline-line); border-radius: 2px; transform-origin: top; animation: lineGrow 0.8s ease-out; }
+        @keyframes lineGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
         .date-divider {
             background: var(--divider-bg); color: var(--divider-text); padding: 8px 18px; border-radius: 24px;
             font-weight: 700; margin: 14px 0 18px -12px; display: inline-flex; align-items: center;
-            gap: 6px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            gap: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
             white-space: nowrap; font-size: 14px; transition: 0.2s; animation: fadeInUp 0.5s ease backwards;
+            transform-origin: left; position: relative; overflow: hidden;
         }
-        .date-divider:hover { background: #ffe0b2; }
+        .date-divider::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3)); transform: translateX(-100%); transition: 0.5s; }
+        .date-divider:hover::before { transform: translateX(100%); }
+        .date-divider:hover { background: #ffe0b2; transform: scale(1.02); }
         .date-divider.collapsed .arrow { transform: rotate(-90deg); }
         .arrow { transition: 0.3s; display: inline-block; }
-        .meal-badge { background: #ff9800; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 11px; }
-        .timeline-item { margin-bottom: 22px; position: relative; opacity: 0; transform: translateY(18px); animation: fadeInUp 0.4s ease forwards; }
+        .meal-badge { background: #ff9800; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(255,152,0,0.3); }
+        .timeline-item { margin-bottom: 22px; position: relative; opacity: 0; transform: translateY(18px); animation: fadeInUp 0.5s ease forwards; }
         .timeline-item.hidden { display: none !important; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .marker {
             position: absolute; left: -32px; top: 18px; width: 18px; height: 18px;
             background: #ff9800; border: 3px solid var(--bg); border-radius: 50%;
-            box-shadow: 0 0 0 3px #ff9800; animation: pulse 3s infinite;
+            box-shadow: 0 0 0 4px rgba(255,152,0,0.3); animation: pulse 3s infinite;
         }
-        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px #ff9800; } 50% { box-shadow: 0 0 0 8px rgba(255,152,0,0.2); } }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 4px rgba(255,152,0,0.3); } 50% { box-shadow: 0 0 0 12px rgba(255,152,0,0.1); } }
         .card {
-            background: var(--card-bg); border-radius: 18px; padding: 18px 20px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.04); position: relative;
-            border-left: 5px solid #ff9800; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: cardPop 0.3s ease backwards;
+            background: var(--card-bg); border-radius: 20px; padding: 20px 22px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05); position: relative;
+            border-left: 5px solid #ff9800; transition: all var(--transition);
+            animation: cardPop 0.4s ease backwards; cursor: default;
+            backdrop-filter: blur(2px);
         }
-        @keyframes cardPop { from { transform: scale(0.98); opacity: 0; } }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
+        @keyframes cardPop { from { transform: scale(0.95); opacity: 0; } }
+        .card:hover { transform: translateY(-6px); box-shadow: 0 18px 30px rgba(0,0,0,0.12); }
         .food-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .emoji { font-size: 26px; }
-        .thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; cursor: pointer; border: 2px solid var(--border); transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .thumb:hover { transform: scale(1.08); border-color: #ff9800; }
-        .tag { padding: 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; display: inline-block; }
+        .emoji { font-size: 28px; animation: bounceEmoji 2s infinite; }
+        @keyframes bounceEmoji { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } 50% { transform: translateY(0); } }
+        .thumb {
+            width: 52px; height: 52px; border-radius: 14px; object-fit: cover; cursor: pointer;
+            border: 2px solid var(--border); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .thumb:hover { transform: scale(1.1) rotate(2deg); border-color: #ff9800; }
+        .tag { padding: 5px 14px; border-radius: 18px; font-size: 13px; font-weight: 600; display: inline-block; transition: 0.2s; }
+        .tag:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
         .tag.ing { background: var(--tag-ing-bg); color: var(--tag-ing-text); }
         .tag.note { background: var(--tag-note-bg); color: var(--tag-note-text); }
         .tag.drink { background: var(--tag-drink-bg); color: var(--tag-drink-text); }
-        .edit-btn, .copy-btn { position: absolute; right: 12px; background: none; border: none; color: #888; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
-        .edit-btn { top: 12px; } .copy-btn { top: 48px; }
-        .edit-btn:hover, .copy-btn:hover { color: #ff9800; background: rgba(255,152,0,0.1); transform: rotate(-20deg) scale(1.1); }
+        .edit-btn, .copy-btn { position: absolute; right: 14px; background: none; border: none; color: #888; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; backdrop-filter: blur(4px); }
+        .edit-btn { top: 12px; } .copy-btn { top: 50px; }
+        .edit-btn:hover, .copy-btn:hover { color: #ff9800; background: rgba(255,152,0,0.15); transform: rotate(-20deg) scale(1.1); }
         .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 60; }
-        .fab-round { width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); color: #888; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.2s; opacity: 0; pointer-events: none; }
-        .fab-round.visible { opacity: 1; pointer-events: auto; animation: bounceIn 0.3s ease; }
-        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .fab-round:hover { background: #ff9800; color: #fff; border-color: #ff9800; }
-        .fab { width: 58px; height: 58px; background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; border-radius: 50%; border: none; font-size: 28px; cursor: pointer; box-shadow: var(--fab-shadow); display: flex; align-items: center; justify-content: center; transition: 0.3s; position: relative; overflow: hidden; }
-        .fab:hover { transform: scale(1.06); }
+        .fab-round {
+            width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); color: #888;
+            border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            transition: 0.3s; opacity: 0; pointer-events: none; backdrop-filter: blur(4px);
+        }
+        .fab-round.visible { opacity: 1; pointer-events: auto; animation: bounceIn 0.5s ease; }
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .fab-round:hover { background: #ff9800; color: #fff; border-color: #ff9800; transform: translateY(-4px); }
+        .fab {
+            width: 60px; height: 60px; background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff; border-radius: 50%; border: none; font-size: 30px; cursor: pointer;
+            box-shadow: var(--fab-shadow); display: flex; align-items: center; justify-content: center;
+            transition: 0.3s; position: relative; overflow: hidden; z-index: 1;
+        }
+        .fab:hover { transform: scale(1.08) rotate(5deg); box-shadow: 0 12px 28px rgba(255,152,0,0.5); }
         .fab:active { transform: scale(0.95); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.2s ease; }
-        .modal { background: var(--card-bg); border-radius: 22px; width: 100%; max-width: 450px; max-height: 85vh; display: flex; flex-direction: column; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay); z-index: 100; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+            animation: fadeIn 0.2s ease; backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--card-bg); border-radius: 24px; width: 100%;
+            max-width: 460px; max-height: 85vh; display: flex; flex-direction: column;
+            padding: 24px; box-shadow: 0 24px 48px rgba(0,0,0,0.25);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
         .modal-scroll { overflow-y: auto; flex: 1; padding-right: 6px; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-        .btn { padding: 10px 22px; border-radius: 24px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: #ff9800; color: #fff; } .btn-primary:hover { background: #fb8c00; }
+        .modal-footer {
+            display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;
+            padding-top: 14px; border-top: 1px solid var(--border);
+        }
+        .btn { padding: 10px 24px; border-radius: 26px; border: none; font-weight: 700; cursor: pointer; transition: 0.25s; position: relative; overflow: hidden; }
+        .btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.2); transform: scale(0); border-radius: inherit; transition: transform 0.4s; }
+        .btn:active::after { transform: scale(1); }
+        .btn-primary { background: #ff9800; color: #fff; }
+        .btn-primary:hover { background: #fb8c00; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,152,0,0.3); }
         .btn-danger { background: #e53935; color: #fff; }
         .toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
-        .toggle { padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .toggle {
+            padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px;
+            background: transparent; color: var(--text-secondary); font-weight: 600;
+            cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+        }
+        .toggle::before { content: ''; position: absolute; inset: 0; background: currentColor; opacity: 0; border-radius: inherit; transition: opacity 0.2s; }
+        .toggle:hover { border-color: var(--accent); }
         .toggle.ing.active { background: #ff9800; color: #fff; border-color: #ff9800; }
         .toggle.note.active { background: #2196f3; color: #fff; border-color: #2196f3; }
         .toggle.drink.active { background: #4caf50; color: #fff; border-color: #4caf50; }
         .upload-area { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 24px; z-index: 200; animation: toastDown 0.3s ease; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        @keyframes toastDown { from { opacity: 0; transform: translate(-50%, -12px); } }
+        .toast {
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 12px 28px; border-radius: 28px;
+            z-index: 200; animation: toastDown 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(6px); font-weight: 500;
+        }
+        @keyframes toastDown { from { opacity: 0; transform: translate(-50%, -20px); } }
         body.dark .toast { background: #f0f0f0; color: #1a1d23; }
-        .stat-period { font-weight: 700; margin-bottom: 12px; }
-        .stat-badge { background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+        .stat-period { font-weight: 700; margin-bottom: 8px; }
+        .stat-badge { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .stat-badge:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -129,7 +193,7 @@
         <div class="search-bar">
             <input type="text" class="search-input" id="searchInput" placeholder="搜尋食物、配料、日期...">
         </div>
-        <div id="statsPanel" style="display:none; background:var(--card-bg); border-radius:16px; padding:16px; margin-bottom:12px;">
+        <div id="statsPanel" style="display:none; background:var(--card-bg); border-radius:16px; padding:16px; margin-bottom:12px; box-shadow: 0 6px 16px rgba(0,0,0,0.05); animation: fadeInUp 0.4s ease;">
             <div id="statsContent"></div>
         </div>
         <div class="timeline" id="timelineContainer"></div>
@@ -205,7 +269,6 @@
     <script>
         (function() {
             const $ = id => document.getElementById(id);
-            // 使用 const 声明 meals，所有修改均通过 splice/push/unshift 等方法，避免变量重绑定
             const meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
             const defaultIngredients = [
                 { name: '雞', isDrink: false }, { name: '豬', isDrink: false }, { name: '牛', isDrink: false }, { name: '羊', isDrink: false },
@@ -224,7 +287,6 @@
                 { keyword: '牛肉麵', ingredientName: '麵' }
             ];
             let autoMatchRules = JSON.parse(localStorage.getItem('diet_auto_match_rules')) || defaultRules;
-
             let currentEditId = null;
             let currentImageData = null;
 
@@ -235,37 +297,25 @@
             }
 
             function renderIngredientToggles() {
-                const ingContainer = $('ingToggles');
-                const drinkContainer = $('drinkToggles');
+                const ingContainer = $('ingToggles'), drinkContainer = $('drinkToggles');
                 if (!ingContainer || !drinkContainer) return;
                 ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i => `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
                 drinkContainer.innerHTML = customIngredients.filter(i => i.isDrink).map(i => `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('');
             }
 
             function renderManagePanel() {
-                const list = $('manageIngredientsList');
-                const rulesList = $('manageRulesList');
-                const ingredientItems = customIngredients.map((ing, idx) => `
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                        <span style="flex:1;">${ing.name} ${ing.isDrink ? '(飲品)' : '(食物)'}</span>
-                        <button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteIngredient(${idx})">刪除</button>
-                    </div>`).join('');
+                const list = $('manageIngredientsList'), rulesList = $('manageRulesList');
                 list.innerHTML = `
                     <div style="margin-bottom:12px;"><b>現有配料</b></div>
-                    ${ingredientItems}
+                    ${customIngredients.map((ing, idx) => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="flex:1;">${ing.name} ${ing.isDrink ? '(飲品)' : '(食物)'}</span><button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteIngredient(${idx})">刪除</button></div>`).join('')}
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <input type="text" id="newIngredientName" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
                         <select id="newIngredientType" style="padding:8px; border-radius:8px; border:1px solid var(--border);"><option value="food">食物</option><option value="drink">飲品</option></select>
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addIngredient()">新增</button>
                     </div>`;
-                const ruleItems = autoMatchRules.map((rule, idx) => `
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                        <span>「${rule.keyword}」→ 配料「${rule.ingredientName}」</span>
-                        <button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteRule(${idx})">刪除</button>
-                    </div>`).join('');
                 rulesList.innerHTML = `
                     <div style="margin-bottom:12px;"><b>自動匹配規則</b></div>
-                    ${ruleItems}
+                    ${autoMatchRules.map((rule, idx) => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span>「${rule.keyword}」→ 配料「${rule.ingredientName}」</span><button class="btn btn-danger" style="padding:4px 12px;" onclick="deleteRule(${idx})">刪除</button></div>`).join('')}
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <input type="text" id="newRuleKeyword" placeholder="關鍵詞" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
                         <input type="text" id="newRuleIngredient" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
@@ -291,19 +341,16 @@
             };
             window.openIngredientManage = () => { renderManagePanel(); $('ingredientManageModal').style.display = 'flex'; };
             window.closeIngredientManage = () => { $('ingredientManageModal').style.display = 'none'; };
-
             document.getElementById('btnManageIngredients')?.addEventListener('click', openIngredientManage);
 
-            // 主题
             const themeBtn = $('themeBtn');
             if (localStorage.getItem('diet_theme') === 'dark' || (!localStorage.getItem('diet_theme') && matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.body.classList.add('dark'); themeBtn.textContent = '☀️';
             }
             themeBtn.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                localStorage.setItem('diet_theme', isDark ? 'dark' : 'light');
-                themeBtn.textContent = isDark ? '☀️' : '🌙';
+                localStorage.setItem('diet_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+                themeBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
             });
 
             function toast(msg) {
@@ -311,7 +358,6 @@
                 document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
             }
 
-            // 图片
             $('btnUpload').addEventListener('click', () => $('fileInput').click());
             $('fileInput').addEventListener('change', function() {
                 const file = this.files[0];
@@ -326,8 +372,7 @@
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                         currentImageData = canvas.toDataURL('image/jpeg', 0.7);
-                        $('imgPreview').src = currentImageData;
-                        $('imgPreview').style.display = 'inline-block';
+                        $('imgPreview').src = currentImageData; $('imgPreview').style.display = 'inline-block';
                         $('btnRemoveImg').style.display = 'inline-block';
                     };
                     img.src = e.target.result;
@@ -354,32 +399,26 @@
                     if (foodName.includes(ing.name)) document.querySelector(`.toggle.ing[data-val="${ing.name}"]`)?.classList.add('active');
                 });
                 autoMatchRules.forEach(rule => {
-                    if (foodName.includes(rule.keyword)) {
-                        document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
-                    }
+                    if (foodName.includes(rule.keyword)) document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
                 });
             }
 
             function autoSelectDrinks(drinkName) {
                 document.querySelectorAll('.toggle.drink').forEach(b => b.classList.remove('active'));
                 const lower = drinkName.toLowerCase();
-                const alias = { '忌廉':'汽水','可樂':'汽水','雪碧':'汽水','sprite':'汽水','芬達':'汽水','fanta':'汽水','七喜':'汽水','7 up':'汽水','百事':'汽水','pepsi':'汽水','coke':'汽水','汽水':'汽水','檸':'檸檬','檸檬':'檸檬','soda':'氣泡水','梳打':'氣泡水','氣泡水':'氣泡水','蘋果汁':'果汁','橙汁':'果汁','提子汁':'果汁','芒果汁':'果汁','果汁':'果汁','啡':'咖啡','咖啡':'咖啡','茶':'茶','水':'水','奶':'奶','啤酒':'啤酒','紅酒':'紅酒','白酒':'白酒','威士忌':'烈酒','白蘭地':'烈酒','伏特加':'烈酒','氈酒':'烈酒','gin':'烈酒','冧酒':'烈酒','rum':'烈酒','龍舌蘭':'烈酒','tequila':'烈酒','清酒':'烈酒','sake':'烈酒','燒酒':'烈酒','利口酒':'烈酒','酒':'啤酒' };
+                const alias = { '忌廉':'汽水','可樂':'汽水','雪碧':'汽水','芬達':'汽水','七喜':'汽水','百事':'汽水','coke':'汽水','汽水':'汽水','檸':'檸檬','檸檬':'檸檬','soda':'氣泡水','梳打':'氣泡水','氣泡水':'氣泡水','蘋果汁':'果汁','橙汁':'果汁','提子汁':'果汁','芒果汁':'果汁','果汁':'果汁','啡':'咖啡','咖啡':'咖啡','茶':'茶','水':'水','奶':'奶','啤酒':'啤酒','紅酒':'紅酒','白酒':'白酒','威士忌':'烈酒','白蘭地':'烈酒','伏特加':'烈酒','清酒':'烈酒','燒酒':'烈酒','酒':'啤酒' };
                 Object.entries(alias).forEach(([k, v]) => {
                     if (lower.includes(k)) {
                         if (v === '水' && (lower.includes('汽水')||lower.includes('氣泡水')||lower.includes('soda')||lower.includes('梳打'))) return;
                         document.querySelector(`.toggle.drink[data-val="${v}"]`)?.classList.add('active');
                     }
                 });
-                autoMatchRules.forEach(rule => {
-                    if (drinkName.includes(rule.keyword)) document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active');
-                });
+                autoMatchRules.forEach(rule => { if (drinkName.includes(rule.keyword)) document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`)?.classList.add('active'); });
             }
 
             function autoSelectNotes(text) {
                 const map = { '走甜':'走甜','無糖':'走甜','少甜':'少甜','多甜':'多甜','多醬':'多醬','少醬':'少醬','走醬':'走醬','多油':'多油','少油':'少油','走油':'走油','多青':'多青','少青':'少青','走青':'走青','多皮':'多皮','少皮':'少皮','走皮':'走皮','大辣':'大辣','中辣':'中辣','小辣':'小辣','走辣':'走辣','凍':'凍','冰':'凍','常溫':'常溫','熱':'熱','加大':'加大','少份':'少份' };
-                Object.entries(map).forEach(([k, v]) => {
-                    if (text.includes(k)) document.querySelector(`.toggle.note[data-val="${v}"]`)?.classList.add('active');
-                });
+                Object.entries(map).forEach(([k, v]) => { if (text.includes(k)) document.querySelector(`.toggle.note[data-val="${v}"]`)?.classList.add('active'); });
             }
 
             $('foodName').addEventListener('input', function() {
@@ -391,19 +430,13 @@
                 autoSelectDrinks(this.value); autoSelectNotes(this.value);
             });
 
-            // 修正备注按钮：单选且可取消
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('toggle')) {
-                    if (e.target.classList.contains('ing') || e.target.classList.contains('drink')) {
-                        e.target.classList.toggle('active');
-                    } else if (e.target.classList.contains('note')) {
+                    if (e.target.classList.contains('ing') || e.target.classList.contains('drink')) e.target.classList.toggle('active');
+                    else if (e.target.classList.contains('note')) {
                         const group = e.target.parentElement;
-                        if (e.target.classList.contains('active')) {
-                            e.target.classList.remove('active');
-                        } else {
-                            group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active'));
-                            e.target.classList.add('active');
-                        }
+                        if (e.target.classList.contains('active')) e.target.classList.remove('active');
+                        else { group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); }
                     }
                 }
             });
@@ -445,29 +478,21 @@
             window.closeModal = () => $('mealModal').style.display = 'none';
 
             window.saveMeal = function() {
-                const date = $('mealDate').value, time = $('mealTime').value;
-                const foodName = $('foodName').value.trim(), drinkName = $('drinkName').value.trim();
+                const date = $('mealDate').value, time = $('mealTime').value, foodName = $('foodName').value.trim(), drinkName = $('drinkName').value.trim();
                 const drinkQty = parseInt($('drinkQty').value) || 1;
                 if (!date || !time || !foodName) return toast('❌ 請填寫完整');
                 const ings = [];
                 document.querySelectorAll('.toggle.ing.active').forEach(b => ings.push(b.dataset.val));
                 document.querySelectorAll('.toggle.drink.active').forEach(b => ings.push(b.dataset.val));
                 $('customIng').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean).forEach(c => { if (!ings.includes(c)) ings.push(c); });
-                const notes = [];
-                document.querySelectorAll('.toggle.note.active').forEach(b => notes.push(b.dataset.val));
+                const notes = []; document.querySelectorAll('.toggle.note.active').forEach(b => notes.push(b.dataset.val));
                 const meal = { id: currentEditId || Date.now(), date, time, foodName, drinkName, drinkQuantity: drinkQty, ingredients: ings, notes, imageUrl: currentImageData || '' };
-                if (currentEditId) {
-                    const idx = meals.findIndex(m => m.id === currentEditId);
-                    if (idx !== -1) meals[idx] = meal;
-                } else {
-                    meals.unshift(meal);
-                }
+                if (currentEditId) { const idx = meals.findIndex(m => m.id === currentEditId); if (idx !== -1) meals[idx] = meal; }
+                else meals.unshift(meal);
                 localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                renderTimeline(); closeModal();
-                toast(currentEditId ? '✅ 已更新' : '🎉 已新增');
+                renderTimeline(); closeModal(); toast(currentEditId ? '✅ 已更新' : '🎉 已新增');
             };
 
-            // 删除：使用 splice，确保有效
             window.deleteMeal = function() {
                 if (!currentEditId) return;
                 if (confirm('確定刪除這筆記錄？')) {
@@ -492,8 +517,7 @@
             $('searchInput').addEventListener('input', function() {
                 const term = this.value.toLowerCase();
                 document.querySelectorAll('.timeline-item').forEach(item => {
-                    const data = (item.dataset.search || '').toLowerCase();
-                    item.classList.toggle('hidden', term !== '' && !data.includes(term));
+                    item.classList.toggle('hidden', term !== '' && !(item.dataset.search || '').toLowerCase().includes(term));
                 });
                 document.querySelectorAll('.date-divider').forEach(div => {
                     let next = div.nextElementSibling, visible = false;
@@ -505,25 +529,13 @@
                 });
             });
 
-            function getMealType(time) {
-                const h = parseInt(time);
-                if (h >= 5 && h < 10) return '早餐';
-                if (h >= 10 && h < 14) return '午餐';
-                if (h >= 14 && h < 17) return '下午茶';
-                if (h >= 17 && h < 22) return '晚餐';
-                return '宵夜';
-            }
+            function getMealType(time) { const h = parseInt(time); if (h>=5&&h<10) return '早餐'; if (h>=10&&h<14) return '午餐'; if (h>=14&&h<17) return '下午茶'; if (h>=17&&h<22) return '晚餐'; return '宵夜'; }
 
             window.copySummaryById = function(mealId) {
                 const meal = meals.find(m => m.id === mealId);
                 if (!meal) return toast('❌ 記錄不存在');
                 const summary = `${meal.date} ${meal.time.replace(':','')}: ${getMealType(meal.time)} ${meal.foodName}${meal.drinkName ? ' ' + meal.drinkName + (meal.drinkQuantity > 1 ? ' x'+meal.drinkQuantity : '') : ''}`;
-                const copy = text => {
-                    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-                    document.body.appendChild(ta); ta.select();
-                    try { document.execCommand('copy'); toast('📋 已複製：' + text); } catch { toast('❌ 複製失敗'); }
-                    document.body.removeChild(ta);
-                };
+                const copy = text => { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('📋 已複製：' + text); } catch { toast('❌ 複製失敗'); } document.body.removeChild(ta); };
                 if (navigator.clipboard) navigator.clipboard.writeText(summary).then(() => toast('📋 已複製：' + summary)).catch(() => copy(summary));
                 else copy(summary);
             };
@@ -537,10 +549,7 @@
 
             function renderTimeline() {
                 const container = $('timelineContainer'); container.innerHTML = '';
-                if (!meals.length) {
-                    container.innerHTML = '<div style="text-align:center;padding:60px;color:#888;">📝<br>尚無記錄</div>';
-                    return;
-                }
+                if (!meals.length) { container.innerHTML = '<div style="text-align:center;padding:60px;color:#888;">📝<br>尚無記錄</div>'; return; }
                 const sorted = [...meals].sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));
                 let curDate = null;
                 sorted.forEach(meal => {
@@ -581,16 +590,8 @@
             btnTop.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
             btnBottom.addEventListener('click', () => scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
 
-            function getWeekRange() {
-                const now = new Date(); const day = now.getDay();
-                const start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0);
-                const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
-                return { start, end };
-            }
-            function getMonthRange() {
-                const now = new Date();
-                return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59,999) };
-            }
+            function getWeekRange() { const now = new Date(); const day = now.getDay(); const start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0); const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999); return { start, end }; }
+            function getMonthRange() { const now = new Date(); return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59,999) }; }
             function filterMeals(range) { return meals.filter(m => { const d = new Date(m.date); return d >= range.start && d <= range.end; }); }
             function countNotes(sub, keys) { return sub.filter(m => m.notes.some(n => keys.includes(n))).length; }
             function statHTML(title, sub) {
