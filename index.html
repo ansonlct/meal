@@ -3,1411 +3,722 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>飲食記錄儀</title>
+    <title>飲食記錄時間線 · 自訂配料與規則</title>
     <style>
-        /* ==================== CSS 變數 (亮色模式) ==================== */
         :root {
-            --bg: #f7f8fc;
-            --bg-pattern: #eef0f5;
-            --header-bg: #ff9800;
-            --header-text: #ffffff;
-            --card-bg: #ffffff;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-            --card-hover-shadow: 0 12px 32px rgba(0, 0, 0, 0.09);
-            --text-primary: #1e2126;
-            --text-secondary: #5f6b7a;
-            --text-muted: #8b95a5;
-            --border: #e2e6ed;
-            --divider-bg: #fff3e0;
-            --divider-text: #e65100;
-            --timeline-line: #ffcc80;
-            --marker-bg: #ff9800;
-            --marker-ring: #ffffff;
-            --tag-ing-bg: #fff3e0;
-            --tag-ing-text: #ef6c00;
-            --tag-note-bg: #e3f2fd;
-            --tag-note-text: #1565c0;
-            --modal-overlay: rgba(0, 0, 0, 0.55);
-            --input-bg: #ffffff;
-            --input-border: #d5dbe3;
-            --toggle-bg: #ffffff;
-            --toggle-border: #d5dbe3;
-            --toggle-text: #4a5568;
-            --btn-cancel-bg: #f1f3f5;
-            --btn-cancel-text: #2d3748;
-            --stat-bg: #fafbfd;
-            --stat-border: #e8ecf1;
-            --toast-bg: #1e2126;
-            --toast-text: #ffffff;
-            --search-bg: #ffffff;
-            --search-border: #e2e6ed;
-            --search-focus-shadow: 0 0 0 3px rgba(255, 152, 0, 0.12);
-            --fab-shadow: 0 6px 20px rgba(255, 152, 0, 0.45);
-            --scrollbar-thumb: #c4c9d1;
-            --scrollbar-track: transparent;
-            --modal-actions-bg: #ffffff;
-            --arrow-color: #e65100;
+            --bg: #f8f9fb; --card-bg: #ffffff; --text: #1e2126; --text-secondary: #5f6b7a;
+            --border: #e2e6ed; --accent: #ff9800; --divider-bg: #fff3e0; --divider-text: #e65100;
+            --timeline-line: #ffcc80; --tag-ing-bg: #fff3e0; --tag-ing-text: #ef6c00;
+            --tag-note-bg: #e3f2fd; --tag-note-text: #1565c0; --tag-drink-bg: #e8f5e9;
+            --tag-drink-text: #2e7d32; --fab-shadow: 0 8px 24px rgba(255,152,0,0.45);
+            --modal-overlay: rgba(0,0,0,0.5);
         }
-
-        /* ==================== 暗色模式 ==================== */
         body.dark {
-            --bg: #1a1d23;
-            --bg-pattern: #23272e;
-            --header-bg: #e67e00;
-            --header-text: #f0f3f8;
-            --card-bg: #282c34;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-            --card-hover-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-            --text-primary: #e8ecf1;
-            --text-secondary: #b0b8c4;
-            --text-muted: #7d8592;
-            --border: #3a3f48;
-            --divider-bg: #3d2e1a;
-            --divider-text: #ffb74d;
-            --timeline-line: #5d4037;
-            --marker-bg: #ff9800;
-            --marker-ring: #1a1d23;
-            --tag-ing-bg: #3d2e1a;
-            --tag-ing-text: #ffb74d;
-            --tag-note-bg: #1a2d3d;
-            --tag-note-text: #90caf9;
-            --modal-overlay: rgba(0, 0, 0, 0.75);
-            --input-bg: #2d323a;
-            --input-border: #4a5058;
-            --toggle-bg: #2d323a;
-            --toggle-border: #4a5058;
-            --toggle-text: #b0b8c4;
-            --btn-cancel-bg: #3a3f48;
-            --btn-cancel-text: #d5dbe3;
-            --stat-bg: #23272e;
-            --stat-border: #3a3f48;
-            --toast-bg: #e8ecf1;
-            --toast-text: #1a1d23;
-            --search-bg: #2d323a;
-            --search-border: #4a5058;
-            --search-focus-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
-            --fab-shadow: 0 6px 24px rgba(230, 126, 0, 0.55);
-            --scrollbar-thumb: #555a62;
-            --scrollbar-track: #23272e;
-            --modal-actions-bg: #282c34;
-            --arrow-color: #ffb74d;
+            --bg: #1a1d23; --card-bg: #282c34; --text: #e8ecf1; --text-secondary: #b0b8c4;
+            --border: #3a3f48; --divider-bg: #3d2e1a; --divider-text: #ffb74d;
+            --timeline-line: #5d4037; --tag-ing-bg: #3d2e1a; --tag-ing-text: #ffb74d;
+            --tag-note-bg: #1a2d3d; --tag-note-text: #90caf9; --tag-drink-bg: #1a3d1a;
+            --tag-drink-text: #81c784; --modal-overlay: rgba(0,0,0,0.8);
         }
-
-        * {
-            box-sizing: border-box;
-        }
-        html {
-            scroll-behavior: smooth;
-            touch-action: pan-x pan-y;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Segoe UI', 'PingFang HK', 'Noto Sans HK', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: var(--text-primary);
-            transition: background-color 0.35s ease, color 0.35s ease;
-            min-height: 100vh;
-            background-image: radial-gradient(circle, var(--bg-pattern) 1px, transparent 1px);
-            background-size: 28px 28px;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
+            font-family: 'Segoe UI', 'PingFang HK', 'Noto Sans HK', system-ui, sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
+            padding-bottom: 90px; -webkit-tap-highlight-color: transparent; user-select: none;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 28px 28px; transition: background-color 0.3s, color 0.3s;
         }
-        input,
-        textarea {
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        ::-webkit-scrollbar {
-            width: 7px;
-            height: 7px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--scrollbar-track);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-thumb);
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ff9800;
-        }
-
         header {
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            color: var(--header-text);
-            padding: 14px 20px;
-            font-size: 19px;
-            font-weight: 700;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            letter-spacing: 0.3px;
-            transition: background 0.35s ease;
-            backdrop-filter: blur(6px);
+            background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; padding: 14px 20px;
+            font-weight: 700; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            letter-spacing: 0.3px; backdrop-filter: blur(6px);
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .btn-icon {
+            background: rgba(255,255,255,0.2); border: none; color: #fff; width: 38px; height: 38px;
+            border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center;
+            justify-content: center; margin-left: 8px; backdrop-filter: blur(4px); transition: 0.2s;
         }
-        .header-icon {
-            font-size: 24px;
-            animation: bounce-icon 2s ease-in-out infinite;
-        }
-        @keyframes bounce-icon {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-6px);
-            }
-            50% {
-                transform: translateY(0);
-            }
-            70% {
-                transform: translateY(-3px);
-            }
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-theme,
-        .btn-stats-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.25s;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            padding: 0;
-            line-height: 1;
-        }
-        .btn-theme:hover,
-        .btn-stats-toggle:hover {
-            background: rgba(255, 255, 255, 0.35);
-            transform: scale(1.08);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        .btn-stats-toggle.active-stats {
-            background: rgba(255, 255, 255, 0.4);
-            border-color: #fff;
-            box-shadow: 0 0 14px rgba(255, 255, 255, 0.3);
-        }
-
-        .main-wrapper {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 0 16px 100px;
-        }
-
-        .search-wrapper {
-            position: sticky;
-            top: 64px;
-            z-index: 90;
-            padding: 12px 0;
-            background: var(--bg);
-            transition: background 0.35s ease;
-        }
-        .search-inner {
-            display: flex;
-            align-items: center;
-            background: var(--search-bg);
-            border: 2px solid var(--search-border);
-            border-radius: 28px;
-            padding: 10px 16px;
-            gap: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        }
-        .search-inner:focus-within {
-            border-color: #ff9800;
-            box-shadow: var(--search-focus-shadow);
-        }
-        .search-icon {
-            flex-shrink: 0;
-            color: var(--text-muted);
-            font-size: 18px;
-        }
+        .btn-icon:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
+        .container { max-width: 620px; margin: 0 auto; padding: 0 16px; }
+        .search-bar { position: sticky; top: 64px; z-index: 45; background: var(--bg); padding: 12px 0; }
         .search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 15px;
-            color: var(--text-primary);
-            outline: none;
-            font-family: inherit;
-            min-width: 0;
+            width: 100%; padding: 12px 18px; border-radius: 30px; border: 2px solid var(--border);
+            background: var(--card-bg); color: var(--text); font-size: 15px; outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.2s;
         }
-        .search-input::placeholder {
-            color: var(--text-muted);
-        }
-        .search-clear {
-            display: none;
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 20px;
-            padding: 0 4px;
-            line-height: 1;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        .search-clear:hover {
-            color: #f44336;
-            background: rgba(244, 67, 54, 0.1);
-        }
-        .search-clear.visible {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .search-results-hint {
-            display: none;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 6px;
-            padding-left: 16px;
-        }
-        .search-results-hint.visible {
-            display: block;
-            animation: fadeInDown 0.25s ease;
-        }
-
-        .stats-panel {
-            background: var(--stat-bg);
-            border: 1px solid var(--stat-border);
-            border-radius: 16px;
-            padding: 0;
-            margin-bottom: 16px;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease,
-                margin 0.35s ease, padding 0.35s ease;
-        }
-        .stats-panel.expanded {
-            max-height: 700px;
-            opacity: 1;
-            padding: 20px 16px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 14px 16px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid transparent;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-            border-color: #ff9800;
-        }
-        .stat-number {
-            font-size: 28px;
-            font-weight: 700;
-            color: #ff9800;
-            line-height: 1.1;
-        }
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            font-weight: 600;
-        }
-        .stats-detail-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        .stats-detail-col {
-            flex: 1;
-            min-width: 160px;
-        }
-        .stats-detail-title {
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .stats-list {
-            list-style: none;
-            padding: 0;
-        }
-        .stats-list li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 4px;
-            background: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-        }
-        .stats-rank {
-            font-weight: 700;
-            color: #ff9800;
-            margin-right: 8px;
-            min-width: 18px;
-        }
-        .stats-count {
-            font-weight: 600;
-            color: var(--text-secondary);
-            background: var(--stat-bg);
-            padding: 2px 10px;
-            border-radius: 14px;
-            font-size: 12px;
-        }
-        .stats-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .btn-sm {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-            font-family: inherit;
-            white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-        }
-        .btn-sm:hover {
-            background: #ff9800;
-            color: #fff;
-            border-color: #ff9800;
-            transform: translateY(-1px);
-        }
-        .btn-sm.export-btn:hover {
-            background: #4caf50;
-            border-color: #4caf50;
-        }
-        .btn-sm.import-btn:hover {
-            background: #2196f3;
-            border-color: #2196f3;
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 32px;
-        }
-        .timeline::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            bottom: 8px;
-            left: 10px;
-            width: 3px;
-            background: var(--timeline-line);
-            border-radius: 2px;
-            z-index: 0;
-        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,152,0,0.1); }
+        .timeline { position: relative; padding-left: 32px; margin-top: 16px; }
+        .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 3px; background: var(--timeline-line); border-radius: 2px; }
         .date-divider {
-            background: var(--divider-bg);
-            color: var(--divider-text);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 20px;
-            border-radius: 24px;
-            font-weight: 700;
-            font-size: 14px;
-            margin: 8px 0 20px -12px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
-            transition: all 0.2s;
+            background: var(--divider-bg); color: var(--divider-text); padding: 8px 18px; border-radius: 24px;
+            font-weight: 700; margin: 14px 0 18px -12px; display: inline-flex; align-items: center;
+            gap: 6px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            white-space: nowrap; font-size: 14px; transition: 0.2s; animation: fadeInUp 0.5s ease backwards;
         }
-        .date-divider:hover {
-            background: #ffe0b2;
-            transform: translateY(-1px);
+        .date-divider:hover { background: #ffe0b2; }
+        .date-divider.collapsed .arrow { transform: rotate(-90deg); }
+        .arrow { transition: 0.3s; display: inline-block; }
+        .meal-badge { background: #ff9800; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 11px; }
+        .timeline-item { margin-bottom: 22px; position: relative; opacity: 0; transform: translateY(18px); animation: fadeInUp 0.4s ease forwards; }
+        .timeline-item.hidden { display: none !important; }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .marker {
+            position: absolute; left: -32px; top: 18px; width: 18px; height: 18px;
+            background: #ff9800; border: 3px solid var(--bg); border-radius: 50%;
+            box-shadow: 0 0 0 3px #ff9800; animation: pulse 3s infinite;
         }
-        .date-divider.hidden-by-search {
-            display: none !important;
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px #ff9800; } 50% { box-shadow: 0 0 0 8px rgba(255,152,0,0.2); } }
+        .card {
+            background: var(--card-bg); border-radius: 18px; padding: 18px 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04); position: relative;
+            border-left: 5px solid #ff9800; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: cardPop 0.3s ease backwards;
         }
-        .collapse-arrow {
-            font-size: 12px;
-            transition: transform 0.3s;
-            display: inline-block;
-            color: var(--arrow-color);
-        }
-        .date-divider.collapsed .collapse-arrow {
-            transform: rotate(-90deg);
-        }
-        .date-badge {
-            background: #ff9800;
-            color: #fff;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 4px;
-            letter-spacing: 0.2px;
-        }
-        .timeline-item {
-            position: relative;
-            margin-bottom: 22px;
-            opacity: 0;
-            transform: translateY(14px);
-            animation: fadeInUp 0.4s ease forwards;
-            transition: all 0.3s ease;
-        }
-        .timeline-item.collapsed {
-            display: none !important;
-        }
-        .timeline-item.hidden-by-search {
-            display: none !important;
-        }
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .timeline-marker {
-            position: absolute;
-            top: 18px;
-            left: -32px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background-color: var(--marker-bg);
-            border: 3px solid var(--marker-ring);
-            box-shadow: 0 0 0 3px #ff9800;
-            z-index: 1;
-            animation: pulse-marker 3s ease-in-out infinite;
-        }
-        @keyframes pulse-marker {
-            0%,
-            100% {
-                box-shadow: 0 0 0 3px #ff9800;
-            }
-            50% {
-                box-shadow: 0 0 0 8px rgba(255, 152, 0, 0.2);
-            }
-        }
-
-        .timeline-card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 18px 20px;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            z-index: 1;
-            border-left: 5px solid transparent;
-        }
-        .timeline-card:hover {
-            box-shadow: var(--card-hover-shadow);
-            transform: translateY(-4px);
-        }
-        .food-name {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            padding-right: 40px;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .food-emoji {
-            font-size: 28px;
-            flex-shrink: 0;
-        }
-        .food-thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            object-fit: cover;
-            flex-shrink: 0;
-            cursor: pointer;
-            border: 2px solid var(--border);
-            transition: all 0.25s;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        }
-        .food-thumb:hover {
-            transform: scale(1.08);
-            border-color: #ff9800;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-        }
-        .tags-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .tag-ingredient {
-            background-color: var(--tag-ing-bg);
-            color: var(--tag-ing-text);
-            padding: 5px 14px;
-            border-radius: 18px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .tag-note {
-            background-color: var(--tag-note-bg);
-            color: var(--tag-note-text);
-            padding: 5px 14px;
-            border-radius: 18px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .edit-btn {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 7px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.25s;
-        }
-        .edit-btn:hover {
-            color: #ff9800;
-            background: rgba(255, 152, 0, 0.12);
-            transform: rotate(-15deg) scale(1.12);
-        }
-
-        .fab-group {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-            z-index: 99;
-        }
-        .fab-round {
-            width: 44px;
-            height: 44px;
-            background: var(--card-bg);
-            color: var(--text-secondary);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-        }
-        .fab-round:hover {
-            background: #ff9800;
-            color: #fff;
-            border-color: #ff9800;
-            box-shadow: 0 6px 18px rgba(255, 152, 0, 0.35);
-        }
-        .btn-back-to-top,
-        .btn-scroll-bottom {
-            opacity: 0;
-            transform: translateY(12px);
-            pointer-events: none;
-        }
-        .btn-back-to-top.visible,
-        .btn-scroll-bottom.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-        .fab {
-            width: 58px;
-            height: 58px;
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 32px;
-            box-shadow: var(--fab-shadow);
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .fab:hover {
-            transform: scale(1.08);
-            box-shadow: 0 8px 28px rgba(255, 152, 0, 0.55);
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--modal-overlay);
-            z-index: 1000;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-            overflow-y: auto;
-        }
-        .modal {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 480px;
-            border-radius: 22px;
-            padding: 24px 22px 18px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
-            margin: auto;
-            animation: slideUp 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            max-height: 85vh;
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateY(40px);
-                opacity: 0;
-            }
-        }
-        .modal-body-scroll {
-            overflow-y: auto;
-            flex: 1;
-            padding-right: 4px;
-        }
-        .modal-actions-fixed {
-            position: sticky;
-            bottom: 0;
-            background: var(--modal-actions-bg);
-            padding-top: 14px;
-            margin-top: 8px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        .btn {
-            padding: 12px 24px;
-            border-radius: 26px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.25s;
-        }
-        .btn-save {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-            box-shadow: 0 5px 16px rgba(255, 152, 0, 0.35);
-        }
-        .btn-delete {
-            background-color: #f44336;
-            color: white;
-            margin-right: auto;
-        }
-        .btn-cancel {
-            background: var(--btn-cancel-bg);
-            color: var(--btn-cancel-text);
-        }
-        .photo-upload-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .photo-preview {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            object-fit: cover;
-            border: 2px solid var(--border);
-            display: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-        }
-        .toast-container {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            pointer-events: none;
-        }
-        .toast {
-            background: var(--toast-bg);
-            color: var(--toast-text);
-            padding: 12px 24px;
-            border-radius: 28px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-            animation: toastIn 0.35s ease, toastOut 0.35s ease 2.4s forwards;
-            pointer-events: auto;
-        }
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateY(-24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        @keyframes toastOut {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-24px);
-            }
-        }
-        @media (max-width: 480px) {
-            .fab-group {
-                bottom: 20px;
-                right: 16px;
-                gap: 12px;
-            }
-            .fab {
-                width: 52px;
-                height: 52px;
-                font-size: 28px;
-            }
-        }
+        @keyframes cardPop { from { transform: scale(0.98); opacity: 0; } }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
+        .food-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .emoji { font-size: 26px; }
+        .thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; cursor: pointer; border: 2px solid var(--border); transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .thumb:hover { transform: scale(1.08); border-color: #ff9800; }
+        .tag { padding: 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; display: inline-block; }
+        .tag.ing { background: var(--tag-ing-bg); color: var(--tag-ing-text); }
+        .tag.note { background: var(--tag-note-bg); color: var(--tag-note-text); }
+        .tag.drink { background: var(--tag-drink-bg); color: var(--tag-drink-text); }
+        .edit-btn, .copy-btn { position: absolute; right: 12px; background: none; border: none; color: #888; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
+        .edit-btn { top: 12px; } .copy-btn { top: 48px; }
+        .edit-btn:hover, .copy-btn:hover { color: #ff9800; background: rgba(255,152,0,0.1); transform: rotate(-20deg) scale(1.1); }
+        .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 60; }
+        .fab-round { width: 44px; height: 44px; border-radius: 50%; background: var(--card-bg); color: #888; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.2s; opacity: 0; pointer-events: none; }
+        .fab-round.visible { opacity: 1; pointer-events: auto; animation: bounceIn 0.3s ease; }
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .fab-round:hover { background: #ff9800; color: #fff; border-color: #ff9800; }
+        .fab { width: 58px; height: 58px; background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; border-radius: 50%; border: none; font-size: 28px; cursor: pointer; box-shadow: var(--fab-shadow); display: flex; align-items: center; justify-content: center; transition: 0.3s; position: relative; overflow: hidden; }
+        .fab:hover { transform: scale(1.06); }
+        .fab:active { transform: scale(0.95); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 100; display: none; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.2s ease; }
+        .modal { background: var(--card-bg); border-radius: 22px; width: 100%; max-width: 450px; max-height: 85vh; display: flex; flex-direction: column; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
+        .modal-scroll { overflow-y: auto; flex: 1; padding-right: 6px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .btn { padding: 10px 22px; border-radius: 24px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #ff9800; color: #fff; } .btn-primary:hover { background: #fb8c00; }
+        .btn-danger { background: #e53935; color: #fff; }
+        .toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+        .toggle { padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .toggle.ing.active { background: #ff9800; color: #fff; border-color: #ff9800; }
+        .toggle.note.active { background: #2196f3; color: #fff; border-color: #2196f3; }
+        .toggle.drink.active { background: #4caf50; color: #fff; border-color: #4caf50; }
+        .upload-area { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 24px; z-index: 200; animation: toastDown 0.3s ease; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        @keyframes toastDown { from { opacity: 0; transform: translate(-50%, -12px); } }
+        body.dark .toast { background: #f0f0f0; color: #1a1d23; }
+        .stat-period { font-weight: 700; margin-bottom: 12px; }
+        .stat-badge { background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
     </style>
 </head>
 <body>
     <header>
-        <div class="header-left"><span class="header-icon">🍽️</span> 我的飲食時間線</div>
-        <div class="header-actions">
-            <button class="btn-stats-toggle" id="btnStatsToggle" title="統計面板">📊</button>
-            <button class="btn-theme" id="btnTheme" title="切換深淺色模式">🌙</button>
+        <span>🍽️ 飲食時間線</span>
+        <div style="display:flex;">
+            <button class="btn-icon" id="toggleStatsBtn">📊</button>
+            <button class="btn-icon" id="themeBtn">🌙</button>
         </div>
     </header>
 
-    <div class="toast-container" id="toastContainer"></div>
-
-    <div class="main-wrapper">
-        <div class="search-wrapper" id="searchWrapper">
-            <div class="search-inner">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" id="searchInput" placeholder="搜尋食物、配料、日期..." autocomplete="off">
-                <button class="search-clear" id="searchClear">✕</button>
-            </div>
-            <div class="search-results-hint" id="searchHint"></div>
+    <div class="container">
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋食物、配料、日期...">
         </div>
-
-        <div class="stats-panel" id="statsPanel">
-            <div class="stats-grid" id="statsGrid"></div>
-            <div class="stats-detail-row" id="statsDetailRow"></div>
-            <div class="stats-actions">
-                <button class="btn-sm export-btn" onclick="exportData()">📥 匯出資料</button>
-                <button class="btn-sm import-btn" onclick="document.getElementById('importFileInput').click()">📤 匯入資料</button>
-                <input type="file" id="importFileInput" accept=".json" onchange="importData(event)" style="display:none;">
-                <button class="btn-sm" onclick="clearSearch()" style="margin-left:auto;">🔄 清除篩選</button>
-            </div>
+        <div id="statsPanel" style="display:none; background:var(--card-bg); border-radius:16px; padding:16px; margin-bottom:12px;">
+            <div id="statsContent"></div>
         </div>
-
-        <div class="timeline" id="timeline-container"></div>
+        <div class="timeline" id="timelineContainer"></div>
     </div>
 
     <div class="fab-group">
-        <button class="fab-round btn-scroll-bottom" id="btnScrollBottom" title="滾動到底部">⬇</button>
-        <button class="fab-round btn-back-to-top" id="btnBackToTop" title="回到頂部">⬆</button>
-        <button class="fab" id="fabAdd" onclick="openModal()" title="新增記錄">+</button>
+        <button class="fab-round" id="btnScrollBottom">⬇</button>
+        <button class="fab-round" id="btnScrollTop">⬆</button>
+        <button class="fab" id="fabAdd">+</button>
     </div>
 
     <div class="modal-overlay" id="mealModal">
         <div class="modal">
-            <h2 id="modalTitle">🍴 新增飲食記錄</h2>
-            <div class="modal-body-scroll">
+            <h3 id="modalTitle" style="margin-bottom:16px;">新增記錄</h3>
+            <div class="modal-scroll">
                 <input type="hidden" id="mealId">
-                <div class="form-row">
-                    <div class="form-group"><label>📅 日期</label><input type="date" id="mealDate" required></div>
-                    <div class="form-group"><label>⏰ 時間</label><input type="time" id="mealTime" required></div>
+                <label>📅 日期</label><input type="date" id="mealDate" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                <label>⏰ 時間</label><input type="time" id="mealTime" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                <label>🍜 食物名稱</label><input type="text" id="foodName" placeholder="例：海南雞飯" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+                <label>🥤 飲品名稱</label><input type="text" id="drinkName" placeholder="例：凍檸茶、可樂" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+
+                <label>🖼️ 圖片</label>
+                <div class="upload-area">
+                    <button type="button" id="btnUpload" class="btn" style="background:#eee; color:#333;">📷 從相簿選擇</button>
+                    <img id="imgPreview" class="thumb" style="display:none;" onclick="showLightbox(this.src)">
+                    <button type="button" id="btnRemoveImg" class="btn btn-danger" style="display:none;">移除</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
-                <div class="form-group"><label>🍜 食品名稱</label><input type="text" id="foodName" placeholder="例如：干炒牛河、海南雞飯..." required></div>
-                <div class="form-group">
-                    <label>🖼️ 食物圖片</label>
-                    <div class="photo-upload-area">
-                        <button type="button" class="btn-sm" id="btnPhotoUpload">📷 從相簿選擇</button>
-                        <img class="photo-preview" id="photoPreview" alt="預覽" onclick="showLightbox(this.src)">
-                        <button type="button" class="btn-sm" id="btnRemovePhoto" style="display:none;">🗑 移除圖片</button>
-                        <input type="file" id="photoFileInput" accept="image/*" style="display:none;">
-                    </div>
+
+                <div style="display:flex; align-items:center; margin-top:12px;">
+                    <label style="margin:0;">🥩 配料</label>
+                    <button type="button" id="btnManageIngredients" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">⚙️ 管理配料</button>
                 </div>
-                <div class="form-group">
-                    <label>🥩 配料 (可多選)</label>
-                    <span class="section-label">肉類</span>
-                    <div class="toggle-group">
-                        <button type="button" class="toggle-btn ingredient" data-val="雞">🐔 雞</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="豬">🐷 豬</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="牛">🐮 牛</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="羊">🐑 羊</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="魚">🐟 魚</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="蝦">🦐 蝦</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="蟹">🦀 蟹</button>
-                    </div>
-                    <span class="section-label">主食</span>
-                    <div class="toggle-group">
-                        <button type="button" class="toggle-btn ingredient" data-val="飯">🍚 飯</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="麵">🍜 麵</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="粉">🍝 粉</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="粥">🥣 粥</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="包">🥟 包</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="腸粉">🫔 腸粉</button>
-                    </div>
-                    <span class="section-label">配菜及其他</span>
-                    <div class="toggle-group">
-                        <button type="button" class="toggle-btn ingredient" data-val="菜">🥬 菜</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="蛋">🥚 蛋</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="豆">🫘 豆</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="菇">🍄 菇</button>
-                        <button type="button" class="toggle-btn ingredient" data-val="湯">🍲 湯</button>
-                    </div>
-                    <input type="text" id="customIngredients" placeholder="其他配料 (用逗號 , 分隔)" style="margin-top:6px;">
-                </div>
-                <div class="form-group">
-                    <label>📝 備註</label>
-                    <span class="section-label">甜度</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="多甜">多甜</button><button type="button" class="toggle-btn note" data-val="少甜">少甜</button><button type="button" class="toggle-btn note" data-val="走甜">走甜</button></div>
-                    <span class="section-label">醬量</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="多醬">多醬</button><button type="button" class="toggle-btn note" data-val="少醬">少醬</button><button type="button" class="toggle-btn note" data-val="走醬">走醬</button></div>
-                    <span class="section-label">油量</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="多油">多油</button><button type="button" class="toggle-btn note" data-val="少油">少油</button><button type="button" class="toggle-btn note" data-val="走油">走油</button></div>
-                    <span class="section-label">青量</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="多青">多青</button><button type="button" class="toggle-btn note" data-val="少青">少青</button><button type="button" class="toggle-btn note" data-val="走青">走青</button></div>
-                    <span class="section-label">皮量</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="多皮">多皮</button><button type="button" class="toggle-btn note" data-val="少皮">少皮</button><button type="button" class="toggle-btn note" data-val="走皮">走皮</button></div>
-                    <span class="section-label">辣度</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="大辣">🌶 大辣</button><button type="button" class="toggle-btn note" data-val="中辣">中辣</button><button type="button" class="toggle-btn note" data-val="小辣">小辣</button><button type="button" class="toggle-btn note" data-val="走辣">走辣</button></div>
-                    <span class="section-label">溫度</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="凍">🧊 凍</button><button type="button" class="toggle-btn note" data-val="常溫">常溫</button><button type="button" class="toggle-btn note" data-val="熱">🔥 熱</button></div>
-                    <span class="section-label">份量</span>
-                    <div class="toggle-group note-group"><button type="button" class="toggle-btn note" data-val="加大">加大</button><button type="button" class="toggle-btn note" data-val="正常">正常</button><button type="button" class="toggle-btn note" data-val="少份">少份</button></div>
-                </div>
+                <div class="toggle-row" id="ingToggles"></div>
+
+                <label style="margin-top:12px;">🥤 飲品配料</label>
+                <div class="toggle-row" id="drinkToggles"></div>
+                <input type="text" id="customIng" placeholder="其他配料 (逗號分隔)" style="width:100%; padding:10px; margin-top:6px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text);">
+
+                <label style="margin-top:12px;">📝 備註</label>
+                <div class="toggle-row" data-group="sweet"><button class="toggle note" data-val="多甜">多甜</button><button class="toggle note" data-val="少甜">少甜</button><button class="toggle note" data-val="走甜">走甜(無糖)</button></div>
+                <div class="toggle-row" data-group="sauce"><button class="toggle note" data-val="多醬">多醬</button><button class="toggle note" data-val="少醬">少醬</button><button class="toggle note" data-val="走醬">走醬</button></div>
+                <div class="toggle-row" data-group="oil"><button class="toggle note" data-val="多油">多油</button><button class="toggle note" data-val="少油">少油</button><button class="toggle note" data-val="走油">走油</button></div>
+                <div class="toggle-row" data-group="green"><button class="toggle note" data-val="多青">多青</button><button class="toggle note" data-val="少青">少青</button><button class="toggle note" data-val="走青">走青</button></div>
+                <div class="toggle-row" data-group="skin"><button class="toggle note" data-val="多皮">多皮</button><button class="toggle note" data-val="少皮">少皮</button><button class="toggle note" data-val="走皮">走皮</button></div>
+                <div class="toggle-row" data-group="spicy"><button class="toggle note" data-val="大辣">大辣</button><button class="toggle note" data-val="中辣">中辣</button><button class="toggle note" data-val="小辣">小辣</button><button class="toggle note" data-val="走辣">走辣</button></div>
+                <div class="toggle-row" data-group="temp"><button class="toggle note" data-val="凍">凍</button><button class="toggle note" data-val="常溫">常溫</button><button class="toggle note" data-val="熱">熱</button></div>
+                <div class="toggle-row" data-group="portion"><button class="toggle note" data-val="加大">加大</button><button class="toggle note" data-val="正常">正常</button><button class="toggle note" data-val="少份">少份</button></div>
             </div>
-            <div class="modal-actions-fixed">
-                <button class="btn btn-delete" id="deleteBtn" onclick="deleteMeal()" style="display:none;">🗑 刪除</button>
-                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn btn-save" onclick="saveMeal()">💾 儲存</button>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="deleteBtn" style="display:none;">🗑 刪除</button>
+                <button class="btn" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveMeal()">💾 儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配料管理模态框 -->
+    <div class="modal-overlay" id="ingredientManageModal">
+        <div class="modal">
+            <h3>⚙️ 配料管理</h3>
+            <div class="modal-scroll" id="manageScroll">
+                <div id="manageIngredientsList"></div>
+                <div id="manageRulesList" style="margin-top:16px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeIngredientManage()">關閉</button>
             </div>
         </div>
     </div>
 
     <script>
         (function() {
-            const foodEmojiMap = {
-                '雞': '🐔',
-                '豬': '🐷',
-                '牛': '🐮',
-                '羊': '🐑',
-                '魚': '🐟',
-                '蝦': '🦐',
-                '蟹': '🦀',
-                '蛋': '🥚',
-                '菜': '🥬',
-                '麵': '🍜',
-                '飯': '🍚',
-                '粉': '🍝',
-                '粥': '🥣',
-                '包': '🥟',
-                '湯': '🍲',
-                '腸粉': '🫔',
-                '菇': '🍄',
-                '豆': '🫘'
+            const $ = id => document.getElementById(id);
+            // 数据存储
+            const meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
+            // 自定义配料列表 { name, isDrink }
+            const defaultIngredients = [
+                { name: '雞', isDrink: false }, { name: '豬', isDrink: false }, { name: '牛', isDrink: false }, { name: '羊', isDrink: false },
+                { name: '魚', isDrink: false }, { name: '蝦', isDrink: false }, { name: '蟹', isDrink: false }, { name: '海鮮', isDrink: false },
+                { name: '飯', isDrink: false }, { name: '麵', isDrink: false }, { name: '粉', isDrink: false }, { name: '粥', isDrink: false },
+                { name: '包', isDrink: false }, { name: '腸粉', isDrink: false }, { name: '菜', isDrink: false }, { name: '蛋', isDrink: false },
+                { name: '豆', isDrink: false }, { name: '菇', isDrink: false },
+                { name: '檸檬', isDrink: true }, { name: '水', isDrink: true }, { name: '茶', isDrink: true }, { name: '咖啡', isDrink: true },
+                { name: '奶', isDrink: true }, { name: '啤酒', isDrink: true }, { name: '紅酒', isDrink: true }, { name: '白酒', isDrink: true },
+                { name: '烈酒', isDrink: true }, { name: '汽水', isDrink: true }, { name: '氣泡水', isDrink: true }, { name: '果汁', isDrink: true }
+            ];
+            let customIngredients = JSON.parse(localStorage.getItem('diet_custom_ingredients')) || defaultIngredients;
+            // 自动匹配规则 [{ keyword, ingredientName }]
+            const defaultRules = [
+                { keyword: '海南雞', ingredientName: '雞' },
+                { keyword: '雞飯', ingredientName: '飯' },
+                { keyword: '牛肉麵', ingredientName: '麵' }
+            ];
+            let autoMatchRules = JSON.parse(localStorage.getItem('diet_auto_match_rules')) || defaultRules;
+
+            let currentEditId = null;
+            let currentImageData = null;
+
+            // 保存配料和规则到 localStorage
+            function saveCustomData() {
+                localStorage.setItem('diet_custom_ingredients', JSON.stringify(customIngredients));
+                localStorage.setItem('diet_auto_match_rules', JSON.stringify(autoMatchRules));
+                renderIngredientToggles();
+            }
+
+            // 渲染配料按钮
+            function renderIngredientToggles() {
+                const ingContainer = $('ingToggles');
+                const drinkContainer = $('drinkToggles');
+                if (!ingContainer || !drinkContainer) return;
+                ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i => 
+                    `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
+                drinkContainer.innerHTML = customIngredients.filter(i => i.isDrink).map(i => 
+                    `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('');
+            }
+
+            // 管理配料界面
+            function renderManagePanel() {
+                const list = $('manageIngredientsList');
+                const rulesList = $('manageRulesList');
+                // 配料列表
+                const ingredientItems = customIngredients.map((ing, idx) => `
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <span style="flex:1;">${ing.name} ${ing.isDrink ? '(飲品)' : '(食物)'}</span>
+                        <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="deleteIngredient(${idx})">刪除</button>
+                    </div>`).join('');
+                list.innerHTML = `
+                    <div style="margin-bottom:12px;"><b>現有配料</b></div>
+                    ${ingredientItems}
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <input type="text" id="newIngredientName" placeholder="新配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
+                        <select id="newIngredientType" style="padding:8px; border-radius:8px; border:1px solid var(--border);">
+                            <option value="food">食物</option>
+                            <option value="drink">飲品</option>
+                        </select>
+                        <button class="btn btn-primary" style="padding:8px 16px;" onclick="addIngredient()">新增</button>
+                    </div>`;
+
+                // 规则列表
+                const ruleItems = autoMatchRules.map((rule, idx) => `
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <span>關鍵詞「${rule.keyword}」→ 配料「${rule.ingredientName}」</span>
+                        <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="deleteRule(${idx})">刪除</button>
+                    </div>`).join('');
+                rulesList.innerHTML = `
+                    <div style="margin-bottom:12px;"><b>自動匹配規則</b></div>
+                    ${ruleItems}
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <input type="text" id="newRuleKeyword" placeholder="關鍵詞" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
+                        <input type="text" id="newRuleIngredient" placeholder="配料名稱" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border);">
+                        <button class="btn btn-primary" style="padding:8px 16px;" onclick="addRule()">新增規則</button>
+                    </div>`;
+            }
+
+            window.deleteIngredient = function(idx) {
+                customIngredients.splice(idx, 1);
+                saveCustomData();
+                renderManagePanel();
+                toast('配料已刪除');
+            };
+            window.addIngredient = function() {
+                const name = document.getElementById('newIngredientName').value.trim();
+                if (!name) return toast('請輸入名稱');
+                if (customIngredients.some(i => i.name === name)) return toast('配料已存在');
+                const type = document.getElementById('newIngredientType').value;
+                customIngredients.push({ name, isDrink: type === 'drink' });
+                saveCustomData();
+                renderManagePanel();
+                toast('配料已新增');
+            };
+            window.deleteRule = function(idx) {
+                autoMatchRules.splice(idx, 1);
+                saveCustomData();
+                renderManagePanel();
+                toast('規則已刪除');
+            };
+            window.addRule = function() {
+                const keyword = document.getElementById('newRuleKeyword').value.trim();
+                const ingredient = document.getElementById('newRuleIngredient').value.trim();
+                if (!keyword || !ingredient) return toast('請填寫關鍵詞和配料');
+                autoMatchRules.push({ keyword, ingredientName: ingredient });
+                saveCustomData();
+                renderManagePanel();
+                toast('規則已新增');
             };
 
-            function getFoodEmoji(name, ings) {
-                const text = (name + ' ' + (ings || []).join(' ')).toLowerCase();
-                for (const [k, v] of Object.entries(foodEmojiMap)) {
-                    if (text.includes(k.toLowerCase())) return v;
-                }
-                if (/飯|rice/.test(name)) return '🍚';
-                if (/麵|面/.test(name)) return '🍜';
-                if (/粉/.test(name)) return '🍝';
-                if (/湯/.test(name)) return '🍲';
-                if (/包/.test(name)) return '🥟';
-                if (/粥/.test(name)) return '🥣';
-                return '🍽️';
+            window.openIngredientManage = function() {
+                renderManagePanel();
+                $('ingredientManageModal').style.display = 'flex';
+            };
+            window.closeIngredientManage = function() {
+                $('ingredientManageModal').style.display = 'none';
+            };
+
+            document.getElementById('btnManageIngredients').addEventListener('click', openIngredientManage);
+
+            // 主题
+            const themeBtn = $('themeBtn');
+            if (localStorage.getItem('diet_theme') === 'dark' || (!localStorage.getItem('diet_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark'); themeBtn.textContent = '☀️';
             }
-
-            function getMealType(timeStr) {
-                if (!timeStr) return { type: 'dinner', label: '晚餐', css: 'dinner' };
-                const [h, m] = timeStr.split(':').map(Number);
-                const t = h * 60 + m;
-                if (t >= 330 && t < 630) return { type: 'breakfast', label: '早餐', css: 'breakfast' };
-                if (t >= 630 && t < 900) return { type: 'lunch', label: '午餐', css: 'lunch' };
-                if (t >= 900 && t < 1020) return { type: 'tea', label: '下午茶', css: 'tea' };
-                if (t >= 1020 && t < 1320) return { type: 'dinner', label: '晚餐', css: 'dinner' };
-                return { type: 'late', label: '宵夜', css: 'late' };
-            }
-
-            // 初始數據清空
-            let meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
-
-            const $ = id => document.getElementById(id);
-            const timelineContainer = $('timeline-container');
-            const mealModal = $('mealModal');
-            const modalTitle = $('modalTitle');
-            const deleteBtn = $('deleteBtn');
-            const mealIdInput = $('mealId');
-            const mealDateInput = $('mealDate');
-            const mealTimeInput = $('mealTime');
-            const foodNameInput = $('foodName');
-            const customIngredientsInput = $('customIngredients');
-            const searchInput = $('searchInput');
-            const searchClear = $('searchClear');
-            const searchHint = $('searchHint');
-            const statsPanel = $('statsPanel');
-            const btnStatsToggle = $('btnStatsToggle');
-            const btnTheme = $('btnTheme');
-            const btnBackToTop = $('btnBackToTop');
-            const btnScrollBottom = $('btnScrollBottom');
-            const toastContainer = $('toastContainer');
-            const fabAdd = $('fabAdd');
-            const photoFileInput = $('photoFileInput');
-            const photoPreview = $('photoPreview');
-            const btnPhotoUpload = $('btnPhotoUpload');
-            const btnRemovePhoto = $('btnRemovePhoto');
-            let pendingImageData = null;
-
-            // 主題
-            function loadTheme() {
-                const saved = localStorage.getItem('diet_theme');
-                const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                document.body.classList.toggle('dark', theme === 'dark');
-                btnTheme.textContent = theme === 'dark' ? '☀️' : '🌙';
-            }
-            btnTheme.addEventListener('click', () => {
-                const isDark = document.body.classList.toggle('dark');
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
                 localStorage.setItem('diet_theme', isDark ? 'dark' : 'light');
-                btnTheme.textContent = isDark ? '☀️' : '🌙';
-                showToast(isDark ? '🌙 深色模式' : '☀️ 淺色模式');
-            });
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                if (!localStorage.getItem('diet_theme')) {
-                    document.body.classList.toggle('dark', e.matches);
-                    btnTheme.textContent = e.matches ? '☀️' : '🌙';
-                }
+                themeBtn.textContent = isDark ? '☀️' : '🌙';
             });
 
-            function showToast(msg) {
-                const t = document.createElement('div');
-                t.className = 'toast';
-                t.textContent = msg;
-                toastContainer.appendChild(t);
-                setTimeout(() => t.remove(), 2800);
+            function toast(msg) {
+                const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+                document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
             }
 
-            // 圖片上傳與預覽
-            btnPhotoUpload.addEventListener('click', () => photoFileInput.click());
-            photoFileInput.addEventListener('change', function() {
+            // 图片上传与删除
+            $('btnUpload').addEventListener('click', () => $('fileInput').click());
+            $('fileInput').addEventListener('change', function() {
                 const file = this.files[0];
                 if (!file || !file.type.startsWith('image/')) return;
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     const img = new Image();
-                    img.onload = function() {
+                    img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let w = img.width,
-                            h = img.height;
-                        if (w > 800) { h = Math.round(h * (800 / w));
-                            w = 800; }
-                        canvas.width = w;
-                        canvas.height = h;
+                        let w = img.width, h = img.height;
+                        if (w > 800) { h = Math.round(h * (800 / w)); w = 800; }
+                        canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        pendingImageData = canvas.toDataURL('image/jpeg', 0.7);
-                        photoPreview.src = pendingImageData;
-                        photoPreview.style.display = 'inline-block';
-                        btnRemovePhoto.style.display = 'inline-flex';
+                        currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+                        $('imgPreview').src = currentImageData;
+                        $('imgPreview').style.display = 'inline-block';
+                        $('btnRemoveImg').style.display = 'inline-block';
                     };
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
-
-            btnRemovePhoto.addEventListener('click', () => {
-                pendingImageData = null;
-                photoPreview.src = '';
-                photoPreview.style.display = 'none';
-                btnRemovePhoto.style.display = 'none';
-                photoFileInput.value = '';
+            $('btnRemoveImg').addEventListener('click', () => {
+                currentImageData = null; $('imgPreview').src = ''; $('imgPreview').style.display = 'none';
+                $('btnRemoveImg').style.display = 'none'; $('fileInput').value = '';
             });
 
-            // Lightbox 查看大圖
             window.showLightbox = function(src) {
                 const overlay = document.createElement('div');
-                overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2000;display:flex;justify-content:center;align-items:center;cursor:pointer;';
-                overlay.innerHTML =
-                    `<img src="${src}" style="max-width:90%;max-height:90%;border-radius:16px;object-fit:contain;">`;
+                overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:300;display:flex;justify-content:center;align-items:center;cursor:pointer;';
+                overlay.innerHTML = `<img src="${src}" style="max-width:90%;max-height:90%;border-radius:12px;">`;
                 overlay.addEventListener('click', () => overlay.remove());
                 document.body.appendChild(overlay);
             };
 
-            // 統計面板
-            function updateStats() {
-                const total = meals.length;
-                const today = new Date().toISOString().split('T')[0];
-                const todayCnt = meals.filter(m => m.date === today).length;
-                const now = new Date();
-                const monday = new Date(now);
-                monday.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
-                const weekCnt = meals.filter(m => m.date >= monday.toISOString().split('T')[0]).length;
-                const foodCnt = {};
-                meals.forEach(m => foodCnt[m.foodName] = (foodCnt[m.foodName] || 0) + 1);
-                const topFoods = Object.entries(foodCnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                const ingCnt = {};
-                meals.forEach(m => (m.ingredients || []).forEach(i => ingCnt[i] = (ingCnt[i] || 0) + 1));
-                const topIngs = Object.entries(ingCnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                $('statsGrid').innerHTML = `
-                    <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">總記錄</div></div>
-                    <div class="stat-card"><div class="stat-number">${todayCnt}</div><div class="stat-label">今日</div></div>
-                    <div class="stat-card"><div class="stat-number">${weekCnt}</div><div class="stat-label">本週</div></div>
-                    <div class="stat-card"><div class="stat-number">${Object.keys(foodCnt).length}</div><div class="stat-label">種類</div></div>`;
-                const foodList = topFoods.length ? topFoods.map(([n, c], i) =>
-                    `<li><span><span class="stats-rank">#${i+1}</span> ${n}</span><span class="stats-count">${c}次</span></li>`
-                ).join('') : '<li>暫無</li>';
-                const ingList = topIngs.length ? topIngs.map(([n, c], i) =>
-                    `<li><span><span class="stats-rank">#${i+1}</span> ${n}</span><span class="stats-count">${c}次</span></li>`
-                ).join('') : '<li>暫無</li>';
-                $('statsDetailRow').innerHTML = `
-                    <div class="stats-detail-col"><div class="stats-detail-title">🏆 最常吃</div><ul class="stats-list">${foodList}</ul></div>
-                    <div class="stats-detail-col"><div class="stats-detail-title">🥩 常用配料</div><ul class="stats-list">${ingList}</ul></div>`;
-            }
-
-            function toggleStats() {
-                const expanded = statsPanel.classList.toggle('expanded');
-                btnStatsToggle.classList.toggle('active-stats', expanded);
-                if (expanded) { updateStats();
-                    statsPanel.scrollIntoView({ behavior: 'smooth' }); }
-            }
-            btnStatsToggle.addEventListener('click', toggleStats);
-
-            // 搜尋 (含日期)
-            function filterTimeline(term) {
-                const t = term.toLowerCase().trim();
-                const children = Array.from(timelineContainer.children);
-                if (!t) {
-                    children.forEach(c => c.classList.remove('hidden-by-search'));
-                    searchHint.classList.remove('visible');
-                    searchClear.classList.remove('visible');
-                    return;
+            // 智能联想 (包含原有的别名和自定义规则)
+            function autoSelectIngredients(foodName) {
+                document.querySelectorAll('.toggle.ing').forEach(b => b.classList.remove('active'));
+                // 原有特定匹配
+                if (/海鮮|海鲜|seafood/i.test(foodName)) {
+                    const btn = document.querySelector(`.toggle.ing[data-val="海鮮"]`);
+                    if (btn) btn.classList.add('active');
                 }
-                searchClear.classList.add('visible');
-                let visible = 0;
-                children.forEach(c => {
-                    if (c.classList.contains('timeline-item')) {
-                        const data = (c.getAttribute('data-search') || '').toLowerCase();
-                        if (data.includes(t)) { c.classList.remove('hidden-by-search');
-                            visible++; } else c.classList.add('hidden-by-search');
+                // 通用：检查每个配料按钮的名称是否在 foodName 中
+                customIngredients.filter(i => !i.isDrink).forEach(ing => {
+                    if (foodName.includes(ing.name)) {
+                        const btn = document.querySelector(`.toggle.ing[data-val="${ing.name}"]`);
+                        if (btn) btn.classList.add('active');
                     }
                 });
-                let hasAfter = false;
-                for (let i = children.length - 1; i >= 0; i--) {
-                    const c = children[i];
-                    if (c.classList.contains('timeline-item')) {
-                        if (!c.classList.contains('hidden-by-search')) hasAfter = true;
-                    } else if (c.classList.contains('date-divider')) {
-                        c.classList.toggle('hidden-by-search', !hasAfter);
-                        hasAfter = false;
+                // 自定义匹配规则
+                autoMatchRules.forEach(rule => {
+                    if (foodName.includes(rule.keyword)) {
+                        const btn = document.querySelector(`.toggle.ing[data-val="${rule.ingredientName}"], .toggle.drink[data-val="${rule.ingredientName}"]`);
+                        if (btn) btn.classList.add('active');
+                    }
+                });
+            }
+
+            function autoSelectDrinks(drinkName) {
+                document.querySelectorAll('.toggle.drink').forEach(b => b.classList.remove('active'));
+                // 使用原有的 alias 映射
+                const lower = drinkName.toLowerCase();
+                const drinkAliasMap = {
+                    '忌廉': '汽水','可樂': '汽水','雪碧': '汽水','sprite': '汽水','芬達': '汽水','fanta': '汽水',
+                    '七喜': '汽水','7 up': '汽水','百事': '汽水','pepsi': '汽水','coke': '汽水','汽水': '汽水',
+                    '檸': '檸檬','檸檬': '檸檬','soda': '氣泡水','梳打': '氣泡水','氣泡水': '氣泡水',
+                    '蘋果汁': '果汁','橙汁': '果汁','提子汁': '果汁','芒果汁': '果汁','果汁': '果汁',
+                    '啡': '咖啡','咖啡': '咖啡','茶': '茶','水': '水','奶': '奶',
+                    '啤酒': '啤酒','紅酒': '紅酒','白酒': '白酒',
+                    '威士忌': '烈酒','白蘭地': '烈酒','伏特加': '烈酒','氈酒': '烈酒','gin': '烈酒',
+                    '冧酒': '烈酒','rum': '烈酒','龍舌蘭': '烈酒','tequila': '烈酒',
+                    '清酒': '烈酒','sake': '烈酒','燒酒': '烈酒','利口酒': '烈酒','酒': '啤酒'
+                };
+                Object.entries(drinkAliasMap).forEach(([key, val]) => {
+                    if (lower.includes(key)) {
+                        if (val === '水' && (lower.includes('汽水')||lower.includes('氣泡水')||lower.includes('soda')||lower.includes('梳打'))) return;
+                        const btn = document.querySelector(`.toggle.drink[data-val="${val}"]`);
+                        if (btn) btn.classList.add('active');
+                    }
+                });
+                // 自定义规则
+                autoMatchRules.forEach(rule => {
+                    if (drinkName.includes(rule.keyword)) {
+                        const btn = document.querySelector(`.toggle.drink[data-val="${rule.ingredientName}"]`);
+                        if (btn) btn.classList.add('active');
+                    }
+                });
+            }
+
+            function autoSelectNotes(text) {
+                const noteMap = {
+                    '走甜': '走甜','無糖': '走甜','无糖': '走甜','少甜': '少甜','多甜': '多甜',
+                    '多醬': '多醬','少醬': '少醬','走醬': '走醬','多油': '多油','少油': '少油','走油': '走油',
+                    '多青': '多青','少青': '少青','走青': '走青','多皮': '多皮','少皮': '少皮','走皮': '走皮',
+                    '大辣': '大辣','中辣': '中辣','小辣': '小辣','走辣': '走辣',
+                    '凍': '凍','冰': '凍','常溫': '常溫','熱': '熱','加大': '加大','少份': '少份'
+                };
+                for (let [key, val] of Object.entries(noteMap)) {
+                    if (text.includes(key)) {
+                        const btn = document.querySelector(`.toggle.note[data-val="${val}"]`);
+                        if (btn) btn.classList.add('active');
                     }
                 }
-                searchHint.textContent = visible ? `找到 ${visible} 筆記錄` : '沒有匹配 😢';
-                searchHint.classList.add('visible');
             }
-            searchInput.addEventListener('input', () => filterTimeline(searchInput.value));
-            searchClear.addEventListener('click', () => { searchInput.value = '';
-                filterTimeline('');
-                searchInput.focus(); });
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape' && document.activeElement === searchInput) { searchInput.value = '';
-                    filterTimeline('');
-                    searchInput.blur(); }
+
+            $('foodName').addEventListener('input', function() {
+                document.querySelectorAll('.toggle.ing, .toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
+                autoSelectIngredients(this.value);
+                autoSelectDrinks('');
+                autoSelectNotes(this.value);
+            });
+            $('drinkName').addEventListener('input', function() {
+                document.querySelectorAll('.toggle.drink, .toggle.note').forEach(b => b.classList.remove('active'));
+                autoSelectDrinks(this.value);
+                autoSelectNotes(this.value);
             });
 
-            // 滾動按鈕
-            function updateScrollBtns() {
-                const y = window.scrollY;
-                const docH = document.documentElement.scrollHeight - window.innerHeight;
-                btnBackToTop.classList.toggle('visible', y > 400);
-                btnScrollBottom.classList.toggle('visible', y < docH - 100);
-            }
-            btnBackToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-            btnScrollBottom.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight,
-                behavior: 'smooth' }));
-            window.addEventListener('scroll', updateScrollBtns, { passive: true });
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('toggle')) {
+                    if (e.target.classList.contains('ing') || e.target.classList.contains('drink')) {
+                        e.target.classList.toggle('active');
+                    } else if (e.target.classList.contains('note')) {
+                        const group = e.target.parentElement;
+                        group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                }
+            });
 
-            // 日期折疊
-            timelineContainer.addEventListener('click', function(e) {
+            window.openModal = function(id = null) {
+                currentEditId = id;
+                document.querySelectorAll('.toggle').forEach(b => b.classList.remove('active'));
+                $('customIng').value = ''; $('drinkName').value = '';
+                currentImageData = null; $('imgPreview').src = ''; $('imgPreview').style.display = 'none';
+                $('btnRemoveImg').style.display = 'none'; $('fileInput').value = '';
+                if (id) {
+                    const meal = meals.find(m => m.id === id);
+                    if (!meal) return;
+                    $('mealId').value = meal.id; $('mealDate').value = meal.date; $('mealTime').value = meal.time;
+                    $('foodName').value = meal.foodName; $('drinkName').value = meal.drinkName || '';
+                    if (meal.imageUrl) {
+                        currentImageData = meal.imageUrl;
+                        $('imgPreview').src = meal.imageUrl; $('imgPreview').style.display = 'inline-block';
+                        $('btnRemoveImg').style.display = 'inline-block';
+                    }
+                    (meal.ingredients||[]).forEach(ing => {
+                        const btn = document.querySelector(`.toggle.ing[data-val="${ing}"], .toggle.drink[data-val="${ing}"]`);
+                        if (btn) btn.classList.add('active');
+                        else $('customIng').value = $('customIng').value ? $('customIng').value+', '+ing : ing;
+                    });
+                    (meal.notes||[]).forEach(note => {
+                        const btn = document.querySelector(`.toggle.note[data-val="${note}"]`);
+                        if (btn) btn.classList.add('active');
+                    });
+                    $('modalTitle').textContent = '✏️ 修改記錄'; $('deleteBtn').style.display = 'inline-block';
+                } else {
+                    $('mealId').value = '';
+                    const now = new Date();
+                    $('mealDate').value = now.toISOString().split('T')[0];
+                    $('mealTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                    $('foodName').value = ''; $('drinkName').value = '';
+                    $('modalTitle').textContent = '🍴 新增記錄'; $('deleteBtn').style.display = 'none';
+                }
+                $('mealModal').style.display = 'flex';
+                setTimeout(() => $('foodName').focus(), 100);
+            };
+            window.closeModal = function() { $('mealModal').style.display = 'none'; };
+            window.saveMeal = function() {
+                const date = $('mealDate').value, time = $('mealTime').value;
+                const foodName = $('foodName').value.trim(), drinkName = $('drinkName').value.trim();
+                if (!date || !time || !foodName) return toast('❌ 請填寫食物名稱、日期及時間');
+                const ings = [];
+                document.querySelectorAll('.toggle.ing.active').forEach(b => ings.push(b.dataset.val));
+                document.querySelectorAll('.toggle.drink.active').forEach(b => ings.push(b.dataset.val));
+                const custom = $('customIng').value.split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+                custom.forEach(c => { if (!ings.includes(c)) ings.push(c); });
+                const notes = [];
+                document.querySelectorAll('.toggle.note.active').forEach(b => notes.push(b.dataset.val));
+                const meal = { id: currentEditId || Date.now(), date, time, foodName, drinkName, ingredients: ings, notes, imageUrl: currentImageData || '' };
+                if (currentEditId) {
+                    const idx = meals.findIndex(m => m.id === currentEditId);
+                    if (idx !== -1) meals[idx] = meal;
+                } else meals.unshift(meal);
+                localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
+                renderTimeline(); closeModal();
+                toast(currentEditId ? '✅ 記錄已更新' : '🎉 新記錄已添加');
+            };
+            window.deleteMeal = function() {
+                if (!currentEditId) return;
+                if (confirm('確定刪除這筆記錄？')) {
+                    meals = meals.filter(m => m.id !== currentEditId);
+                    localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
+                    renderTimeline(); closeModal(); toast('🗑 記錄已刪除');
+                }
+            };
+
+            // 日期折叠
+            document.addEventListener('click', function(e) {
                 const divider = e.target.closest('.date-divider');
                 if (!divider) return;
                 divider.classList.toggle('collapsed');
-                let sib = divider.nextElementSibling;
-                while (sib && !sib.classList.contains('date-divider')) {
-                    if (sib.classList.contains('timeline-item')) sib.classList.toggle('collapsed');
-                    sib = sib.nextElementSibling;
+                let next = divider.nextElementSibling;
+                while (next && !next.classList.contains('date-divider')) {
+                    if (next.classList.contains('timeline-item')) next.classList.toggle('hidden');
+                    next = next.nextElementSibling;
                 }
             });
 
-            function formatDate(dateStr) {
-                const d = new Date(dateStr);
-                if (isNaN(d)) return dateStr;
-                const today = new Date();
-                const diff = Math.round((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(d
-                    .getFullYear(), d.getMonth(), d.getDate())) / 86400000);
-                let prefix = diff === 0 ? '今天 · ' : diff === 1 ? '昨天 · ' : diff === 2 ? '前天 · ' : '';
-                return prefix + `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+            $('searchInput').addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                const items = document.querySelectorAll('.timeline-item');
+                items.forEach(item => {
+                    const data = (item.dataset.search || '').toLowerCase();
+                    item.classList.toggle('hidden', term !== '' && !data.includes(term));
+                });
+                const dividers = document.querySelectorAll('.date-divider');
+                dividers.forEach(div => {
+                    let next = div.nextElementSibling, visible = false;
+                    while (next && !next.classList.contains('date-divider')) {
+                        if (next.classList.contains('timeline-item') && !next.classList.contains('hidden')) { visible = true; break; }
+                        next = next.nextElementSibling;
+                    }
+                    div.classList.toggle('hidden', term !== '' && !visible);
+                });
+            });
+
+            function getMealType(time) {
+                const h = parseInt(time);
+                if (h >= 5 && h < 10) return '早餐';
+                if (h >= 10 && h < 14) return '午餐';
+                if (h >= 14 && h < 17) return '下午茶';
+                if (h >= 17 && h < 22) return '晚餐';
+                return '宵夜';
             }
 
-            function getDayOfWeek(dateStr) {
-                const d = new Date(dateStr);
-                return ['日', '一', '二', '三', '四', '五', '六'][d.getDay()] ? '星期' + ['日', '一', '二', '三', '四', '五', '六'][d
-                    .getDay()
-                ] : '';
+            function generateSummary(mealId) {
+                const meal = meals.find(m => m.id === mealId);
+                if (!meal) return null;
+                const date = meal.date, timeStr = meal.time.replace(':', '');
+                const type = getMealType(meal.time), food = meal.foodName, drink = meal.drinkName || '';
+                let summary = `${date} ${timeStr}: ${type} ${food}`;
+                if (drink) summary += ` ${drink}`;
+                return summary;
+            }
+            window.copySummaryById = function(mealId) {
+                const summary = generateSummary(mealId);
+                if (!summary) return toast('❌ 記錄不存在');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(summary).then(() => toast('📋 已複製摘要：' + summary)).catch(() => fallbackCopy(summary));
+                } else fallbackCopy(summary);
+            };
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea'); textarea.value = text; textarea.style.position = 'fixed'; textarea.style.opacity = '0';
+                document.body.appendChild(textarea); textarea.select();
+                try { document.execCommand('copy'); toast('📋 已複製摘要：' + text); } catch { toast('❌ 複製失敗'); }
+                document.body.removeChild(textarea);
+            }
+
+            function getEmoji(name, ings) {
+                const map = { '雞':'🐔','豬':'🐷','牛':'🐮','羊':'🐑','魚':'🐟','蝦':'🦐','蟹':'🦀','海鮮':'🦞','蛋':'🥚','菜':'🥬','麵':'🍜','飯':'🍚','粉':'🍝','粥':'🥣','包':'🥟','湯':'🍲','腸粉':'🫔','菇':'🍄','豆':'🫘','檸檬':'🍋','水':'💧','茶':'🍵','咖啡':'☕','奶':'🥛','啤酒':'🍺','紅酒':'🍷','白酒':'🥂','烈酒':'🥃','汽水':'🥤','氣泡水':'🫧','果汁':'🧃' };
+                const text = (name + ' ' + (ings||[]).join(' ')).toLowerCase();
+                for (let [k, v] of Object.entries(map)) if (text.includes(k)) return v;
+                return '🍽️';
             }
 
             function renderTimeline() {
-                timelineContainer.innerHTML = '';
+                const container = $('timelineContainer'); container.innerHTML = '';
                 if (!meals.length) {
-                    timelineContainer.innerHTML =
-                        '<div class="empty-state"><div class="empty-state-emoji">📝</div><div class="empty-state-title">未有記錄</div><div class="empty-state-desc">點擊 ＋ 開始記錄</div></div>';
-                    updateStats();
+                    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:48px;">📝</div><p>尚無飲食記錄</p><p>點擊右下角 ＋ 開始記錄</p></div>';
                     return;
                 }
-                meals.sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));
+                const sorted = [...meals].sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));
                 let curDate = null;
-                meals.forEach((meal, idx) => {
+                sorted.forEach((meal, idx) => {
                     if (meal.date !== curDate) {
-                        const cnt = meals.filter(m => m.date === meal.date).length;
-                        timelineContainer.innerHTML +=
-                            `<div class="date-divider" data-date="${meal.date}"><span class="collapse-arrow">▼</span> 📅 ${formatDate(meal.date)} ${getDayOfWeek(meal.date)} <span class="date-badge">${cnt} 餐</span></div>`;
+                        const cnt = sorted.filter(m => m.date === meal.date).length;
+                        const [y, m, d] = meal.date.split('-');
+                        const week = ['日','一','二','三','四','五','六'][new Date(meal.date).getDay()];
+                        container.innerHTML += `<div class="date-divider" data-date="${meal.date}"><span class="arrow">▼</span> 📅 ${y}年${+m}月${+d}日 星期${week} <span class="meal-badge">${cnt} 餐</span></div>`;
                         curDate = meal.date;
                     }
-                    const ing = meal.ingredients || [];
-                    const notes = meal.notes || [];
-                    const img = meal.imageUrl || '';
-                    const type = getMealType(meal.time);
-                    const emoji = getFoodEmoji(meal.foodName, ing);
-                    const ingHtml = ing.length ?
-                        `<div class="tags-row"><span class="tag-label">配料：</span>${ing.map(i => `<span class="tag-ingredient">${i}</span>`).join('')}</div>` :
-                        '';
-                    const noteHtml = notes.length ?
-                        `<div class="tags-row"><span class="tag-label">備註：</span>${notes.map(n => `<span class="tag-note">${n}</span>`).join('')}</div>` :
-                        '';
-                    const imgHtml = img ?
-                        `<img src="${img}" class="food-thumb" alt="食物圖片" loading="lazy" onclick="event.stopPropagation(); showLightbox('${img}')" onerror="this.style.display='none'">` :
-                        '';
-                    const editSvg =
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-                    const searchData = [meal.foodName, ...ing, ...notes, meal.date, formatDate(meal.date)].join(
-                    ' ').toLowerCase();
-                    timelineContainer.innerHTML += `
-                        <div class="timeline-item" data-search="${searchData.replace(/"/g, '&quot;')}" data-date="${meal.date}" style="animation-delay:${idx*0.03}s">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-card" style="border-left-color:${type.css==='breakfast'?'#ff9800':type.css==='lunch'?'#4caf50':type.css==='tea'?'#e91e63':type.css==='dinner'?'#2196f3':'#9c27b0'}">
-                                <button class="edit-btn" onclick="event.stopPropagation(); openModal(${meal.id})">${editSvg}</button>
-                                <div style="display:flex;align-items:center;gap:8px;"><span class="time">🕐 ${meal.time}</span><span class="meal-type-badge badge-${type.css}">${type.label}</span></div>
-                                <div class="food-name"><span class="food-emoji">${emoji}</span>${meal.foodName}${imgHtml}</div>
-                                <div class="tags-container">${ingHtml}${noteHtml}</div>
+                    const ings = meal.ingredients || [], notes = meal.notes || [];
+                    const drinkKeys = customIngredients.filter(i => i.isDrink).map(i => i.name);
+                    const ingTags = ings.filter(i => !drinkKeys.includes(i)).map(i => `<span class="tag ing">${i}</span>`).join('');
+                    const drinkTags = ings.filter(i => drinkKeys.includes(i)).map(i => `<span class="tag drink">${i}</span>`).join('');
+                    const noteTags = notes.map(n => `<span class="tag note">${n}</span>`).join('');
+                    const imgHtml = meal.imageUrl ? `<img src="${meal.imageUrl}" class="thumb" onclick="event.stopPropagation();showLightbox('${meal.imageUrl.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">` : '';
+                    const drinkNameHtml = meal.drinkName ? `<div style="font-size:14px; color:var(--text-secondary); margin-top:4px;">🥤 ${meal.drinkName}</div>` : '';
+                    const emoji = getEmoji(meal.foodName + meal.drinkName, ings);
+                    container.innerHTML += `
+                        <div class="timeline-item" data-search="${(meal.foodName + ' ' + (meal.drinkName||'') + ' ' + ings.join(' ') + ' ' + notes.join(' ') + ' ' + meal.date).toLowerCase()}">
+                            <div class="marker"></div>
+                            <div class="card">
+                                <button class="edit-btn" onclick="openModal(${meal.id})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                                <button class="copy-btn" onclick="event.stopPropagation(); copySummaryById(${meal.id})" title="複製摘要"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+                                <div class="card-header"><span>🕐 ${meal.time}</span><span class="meal-badge">${getMealType(meal.time)}</span></div>
+                                <div class="food-title"><span class="emoji">${emoji}</span>${meal.foodName}${imgHtml}</div>
+                                ${drinkNameHtml}
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${ingTags}${drinkTags}${noteTags}</div>
                             </div>
                         </div>`;
                 });
-                updateStats();
-                if (searchInput.value.trim()) filterTimeline(searchInput.value);
             }
 
-            function autoSelectIngredients(foodName) {
-                document.querySelectorAll('.ingredient').forEach(btn => {
-                    if (foodName.includes(btn.dataset.val)) btn.classList.add('active');
-                });
-            }
-            foodNameInput.addEventListener('input', () => autoSelectIngredients(foodNameInput.value));
+            const btnTop = $('btnScrollTop'), btnBottom = $('btnScrollBottom');
+            window.addEventListener('scroll', () => {
+                const y = window.scrollY, max = document.body.scrollHeight - window.innerHeight;
+                btnTop.classList.toggle('visible', y > 300); btnBottom.classList.toggle('visible', y < max - 100);
+            });
+            btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            btnBottom.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
 
-            function openModal(editId = null) {
-                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-                customIngredientsInput.value = '';
-                pendingImageData = null;
-                photoPreview.src = '';
-                photoPreview.style.display = 'none';
-                btnRemovePhoto.style.display = 'none';
-                photoFileInput.value = '';
-                if (editId) {
-                    const meal = meals.find(m => m.id === editId);
-                    if (!meal) return;
-                    mealIdInput.value = meal.id;
-                    mealDateInput.value = meal.date;
-                    mealTimeInput.value = meal.time;
-                    foodNameInput.value = meal.foodName;
-                    if (meal.imageUrl && meal.imageUrl.startsWith('data:image')) {
-                        pendingImageData = meal.imageUrl;
-                        photoPreview.src = meal.imageUrl;
-                        photoPreview.style.display = 'inline-block';
-                        btnRemovePhoto.style.display = 'inline-flex';
-                    }
-                    (meal.ingredients || []).forEach(ing => {
-                        const btn = document.querySelector(`.ingredient[data-val="${ing}"]`);
-                        if (btn) btn.classList.add('active');
-                        else customIngredientsInput.value = customIngredientsInput.value ? customIngredientsInput
-                            .value + ', ' + ing : ing;
-                    });
-                    (meal.notes || []).forEach(note => {
-                        const btn = document.querySelector(`.note[data-val="${note}"]`);
-                        if (btn) btn.classList.add('active');
-                    });
-                    modalTitle.innerText = '✏️ 修改記錄';
-                    deleteBtn.style.display = 'flex';
-                } else {
-                    mealIdInput.value = '';
-                    const now = new Date();
-                    mealDateInput.value = now.toISOString().split('T')[0];
-                    mealTimeInput.value =
-                        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                    foodNameInput.value = '';
-                    modalTitle.innerText = '🍴 新增記錄';
-                    deleteBtn.style.display = 'none';
-                }
-                mealModal.style.display = 'flex';
-                setTimeout(() => foodNameInput.focus(), 150);
+            function getWeeklyRange() {
+                const now = new Date(); const day = now.getDay();
+                const start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0);
+                const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+                return { start, end };
+            }
+            function getMonthlyRange() {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23,59,59,999);
+                return { start, end };
+            }
+            function filterMealsByRange(meals, range) { return meals.filter(m => { const d = new Date(m.date); return d >= range.start && d <= range.end; }); }
+            function countByNotes(mealsSubset, keywords) { return mealsSubset.filter(m => m.notes.some(n => keywords.includes(n))).length; }
+            function generateStatsHTML(title, subset) {
+                const alcoholKeys = ['啤酒','紅酒','白酒','烈酒'], spicyKeys = ['大辣','中辣','小辣','走辣'];
+                const sweetKeys = ['少甜','走甜'], sauceKeys = ['少醬','走醬'];
+                const foodCount = {}, drinkCount = {};
+                subset.forEach(m => { foodCount[m.foodName] = (foodCount[m.foodName]||0)+1; if (m.drinkName) drinkCount[m.drinkName] = (drinkCount[m.drinkName]||0)+1; });
+                const topFood = Object.entries(foodCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
+                const topDrink = Object.entries(drinkCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join('、') || '-';
+                const alcoholCnt = subset.filter(m => (m.ingredients||[]).some(i => alcoholKeys.includes(i))).length;
+                const spicyCnt = countByNotes(subset, spicyKeys);
+                const hotCnt = countByNotes(subset, ['熱']), coldCnt = countByNotes(subset, ['凍']);
+                const sweetCnt = countByNotes(subset, sweetKeys), sauceCnt = countByNotes(subset, sauceKeys);
+                return `<div style="margin-bottom:16px;"><div class="stat-period">${title}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <div style="flex:1;min-width:120px;background:var(--card-bg);border-radius:12px;padding:12px;"><b>🔥 熱門食物</b><br>${topFood}</div>
+                        <div style="flex:1;min-width:120px;background:var(--card-bg);border-radius:12px;padding:12px;"><b>🥤 熱門飲品</b><br>${topDrink}</div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+                        <span class="stat-badge">🍯 少甜/走甜 ${sweetCnt}</span><span class="stat-badge">🥫 少醬/走醬 ${sauceCnt}</span>
+                        <span class="stat-badge">🍺 飲酒 ${alcoholCnt}</span><span class="stat-badge">🌶️ 食辣 ${spicyCnt}</span>
+                        <span class="stat-badge">🧊 凍飲 ${coldCnt}</span><span class="stat-badge">☕ 熱飲 ${hotCnt}</span>
+                    </div></div>`;
             }
 
-            function closeModal() {
-                mealModal.style.display = 'none';
-                pendingImageData = null;
-                photoPreview.src = '';
-                photoPreview.style.display = 'none';
-                btnRemovePhoto.style.display = 'none';
-            }
-            mealModal.addEventListener('click', e => { if (e.target === mealModal) closeModal(); });
+            $('toggleStatsBtn').addEventListener('click', () => {
+                const panel = $('statsPanel');
+                if (panel.style.display === 'none') {
+                    const weekRange = getWeeklyRange(), monthRange = getMonthlyRange();
+                    const weekMeals = filterMealsByRange(meals, weekRange), monthMeals = filterMealsByRange(meals, monthRange);
+                    const weekTitle = `📅 本週 (${weekRange.start.toLocaleDateString('zh-HK')} - ${weekRange.end.toLocaleDateString('zh-HK')})`;
+                    const monthTitle = `📆 本月 (${monthRange.start.toLocaleDateString('zh-HK')} - ${monthRange.end.toLocaleDateString('zh-HK')})`;
+                    $('statsContent').innerHTML = generateStatsHTML(weekTitle, weekMeals) + generateStatsHTML(monthTitle, monthMeals);
+                    panel.style.display = 'block';
+                } else panel.style.display = 'none';
+            });
 
-            function saveMeal() {
-                const date = mealDateInput.value;
-                const time = mealTimeInput.value;
-                const name = foodNameInput.value.trim();
-                if (!date || !time || !name) { showToast('請填寫完整'); return; }
-                const ings = [];
-                document.querySelectorAll('.ingredient.active').forEach(b => ings.push(b.dataset.val));
-                const custom = customIngredientsInput.value.split(/[,，、]/).map(s => s.trim()).filter(Boolean);
-                custom.forEach(c => { if (!ings.includes(c)) ings.push(c); });
-                const notes = [];
-                document.querySelectorAll('.note.active').forEach(b => notes.push(b.dataset.val));
-                const finalImg = pendingImageData || '';
-                if (mealIdInput.value) {
-                    const idx = meals.findIndex(m => m.id == mealIdInput.value);
-                    if (idx !== -1) Object.assign(meals[idx], { date, time, foodName: name, ingredients: ings, notes,
-                        imageUrl: finalImg });
-                    showToast('✅ 已更新');
-                } else {
-                    meals.push({ id: Date.now(), date, time, foodName: name, ingredients: ings, notes, imageUrl: finalImg });
-                    showToast('🎉 已添加');
-                }
-                localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                renderTimeline();
-                closeModal();
-            }
-
-            function deleteMeal() {
-                if (!mealIdInput.value) return;
-                if (confirm('確定刪除?')) {
-                    meals = meals.filter(m => m.id != mealIdInput.value);
-                    localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                    renderTimeline();
-                    closeModal();
-                    showToast('🗑 已刪除');
-                }
-            }
-
-            window.exportData = function() {
-                const blob = new Blob([JSON.stringify(meals, null, 2)], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `飲食備份_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-                showToast('📥 已匯出');
-            };
-            window.importData = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    try {
-                        const data = JSON.parse(ev.target.result);
-                        if (!Array.isArray(data)) throw new Error();
-                        if (confirm(`匯入 ${data.length} 筆？按確定替換，取消合併`)) {
-                            meals = data;
-                        } else {
-                            const ids = new Set(meals.map(m => m.id));
-                            data.forEach(d => { if (!ids.has(d.id)) meals.push(d);
-                                ids.add(d.id); });
-                        }
-                        localStorage.setItem('diet_meals_v3', JSON.stringify(meals));
-                        renderTimeline();
-                        showToast('📤 匯入完成');
-                    } catch { showToast('❌ 格式錯誤'); }
-                };
-                reader.readAsText(file);
-                e.target.value = '';
-            };
-            window.clearSearch = () => { searchInput.value = '';
-                filterTimeline('');
-                searchInput.focus(); };
-            window.openModal = openModal;
-            window.closeModal = closeModal;
-            window.saveMeal = saveMeal;
-            window.deleteMeal = deleteMeal;
-
-            loadTheme();
+            // 初始化
+            renderIngredientToggles();
+            $('fabAdd').addEventListener('click', () => openModal());
             renderTimeline();
-            updateScrollBtns();
+            window.scrollTo({ top: 0 });
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal-overlay')) {
+                    e.target.style.display = 'none';
+                }
+            });
         })();
     </script>
 </body>
