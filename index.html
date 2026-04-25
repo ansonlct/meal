@@ -463,14 +463,19 @@
                 autoSelectNotes(this.value);
             });
 
+            // 修改后的 toggle 逻辑：配料多选，备注单选且可取消
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('toggle')) {
                     if (e.target.classList.contains('ing') || e.target.classList.contains('drink')) {
                         e.target.classList.toggle('active');
                     } else if (e.target.classList.contains('note')) {
                         const group = e.target.parentElement;
-                        group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
+                        if (e.target.classList.contains('active')) {
+                            e.target.classList.remove('active');
+                        } else {
+                            group.querySelectorAll('.toggle.note').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                        }
                     }
                 }
             });
