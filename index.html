@@ -239,7 +239,7 @@
             const $ = id => document.getElementById(id);
             const meals = JSON.parse(localStorage.getItem('diet_meals_v3')) || [];
 
-            const cookingMethods = ['炒','煎','炸','煮','燉','汆','滷','烤','烘','燙','煨','爆','蒸','涼拌'];
+            const cookingMethods = ['煎','炒','煮','炸','蒸','烤','烘','燉','燙','煨','爆','汆','滷','涼拌'];
             const drinkPriority = ['凍','熱','常溫','檸檬','水','茶','咖啡','奶','啤酒','紅酒','白酒','烈酒','汽水','氣泡水','果汁'];
 
             const defaultIngredients = [
@@ -248,15 +248,15 @@
                 { name: '飯', isDrink: false }, { name: '麵', isDrink: false }, { name: '粉', isDrink: false }, { name: '粥', isDrink: false },
                 { name: '包', isDrink: false }, { name: '腸粉', isDrink: false }, { name: '菜', isDrink: false }, { name: '蛋', isDrink: false },
                 { name: '豆', isDrink: false }, { name: '菇', isDrink: false },
-                { name: '檸檬', isDrink: true }, { name: '水', isDrink: true }, { name: '茶', isDrink: true }, { name: '咖啡', isDrink: true },
-                { name: '奶', isDrink: true }, { name: '啤酒', isDrink: true }, { name: '紅酒', isDrink: true }, { name: '白酒', isDrink: true },
-                { name: '烈酒', isDrink: true }, { name: '汽水', isDrink: true }, { name: '氣泡水', isDrink: true }, { name: '果汁', isDrink: true }
+                { name: '檸檬茶', isDrink: true }, { name: '檸檬水', isDrink: true }, { name: '茶', isDrink: true }, { name: '咖啡', isDrink: true },
+                { name: '奶茶', isDrink: true }, { name: '啤酒', isDrink: true }, { name: '紅酒', isDrink: true }, { name: '白酒', isDrink: true },
+                { name: '奶', isDrink: true }, { name: '汽水', isDrink: true }, { name: '梳打水', isDrink: true }, { name: '果汁', isDrink: true }
             ];
             let customIngredients = JSON.parse(localStorage.getItem('diet_custom_ingredients')) || defaultIngredients;
             const defaultRules = [
-                { keyword: '海南雞', ingredientName: '雞' },
-                { keyword: '雞飯', ingredientName: '飯' },
-                { keyword: '牛肉麵', ingredientName: '麵' }
+                { keyword: '', ingredientName: '雞' },
+                { keyword: '', ingredientName: '飯' },
+                { keyword: '米粉', ingredientName: '麵' }
             ];
             let autoMatchRules = JSON.parse(localStorage.getItem('diet_auto_match_rules')) || defaultRules;
             let currentEditId = null;
@@ -285,7 +285,7 @@
                 ingContainer.innerHTML = customIngredients.filter(i => !i.isDrink).map(i => `<button class="toggle ing" data-val="${i.name}">${i.name}</button>`).join('');
                 const drinkList = sortDrinkIngredients(customIngredients.filter(i => i.isDrink));
                 drinkContainer.innerHTML = drinkList.map(i => `<button class="toggle drink" data-val="${i.name}">${i.name}</button>`).join('') + 
-                    `<button class="toggle drink" data-val="凍">🧊凍</button><button class="toggle drink" data-val="熱">☕熱</button><button class="toggle drink" data-val="常溫">🌡常溫</button>`;
+                    `<button class="toggle drink" data-val="凍">🧊凍</button><button class="toggle drink" data-val="熱">☕熱</button><button class="toggle drink" data-val="溫">🌡溫</button>`;
             }
 
             function renderManagePanel(type) {
